@@ -98,9 +98,10 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
       onClick={(e) => {
         if (e.target === dialogRef.current) close();
       }}
-      className="m-auto mt-[12vh] w-[min(92vw,36rem)] rounded-xl bg-paper p-0 text-ink shadow-2xl backdrop:bg-black/60"
+      className="palette m-auto mt-[12vh] w-[min(92vw,38rem)] bg-paper p-0 text-ink backdrop:bg-[#0b0f1c]/75"
     >
-      <div className="p-3">
+      <div className="border-b-2 border-ink px-5 pb-3 pt-5">
+        <p className="label mb-2 opacity-80">Index <span className="font-jp tracking-normal" aria-hidden="true">索引</span></p>
         <input
           ref={inputRef}
           type="text"
@@ -117,10 +118,10 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
             setActive(0);
           }}
           onKeyDown={onKeyDown}
-          className="w-full rounded-md border border-ink/30 bg-transparent px-3 py-2 text-base"
+          className="display w-full bg-transparent py-1 text-[2rem] outline-none placeholder:text-ink/40"
         />
       </div>
-      <ul id={listId} role="listbox" aria-label="Results" className="max-h-[50vh] overflow-auto px-2 pb-2">
+      <ul id={listId} role="listbox" aria-label="Results" className="max-h-[50vh] overflow-auto py-2">
         {results.map((item, i) => (
           <li
             key={`${item.group}-${item.label}-${item.url}`}
@@ -129,10 +130,10 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
             aria-selected={i === active}
             onMouseMove={() => setActive(i)}
             onClick={() => go(item)}
-            className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 aria-selected:bg-torii aria-selected:text-paper"
+            className="flex cursor-pointer items-center justify-between border-b border-rule px-5 py-2.5 aria-selected:bg-ink aria-selected:text-paper"
           >
             <span>{item.label}</span>
-            <span className="text-sm opacity-70">{item.group}</span>
+            <span className="label opacity-80">{item.group}</span>
           </li>
         ))}
       </ul>

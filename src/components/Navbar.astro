@@ -38,41 +38,63 @@ const paletteItems: PaletteItem[] = [
 ];
 
 const themes = [
-  { id: 'day', label: 'Day' },
-  { id: 'dusk', label: 'Dusk' },
-  { id: 'night', label: 'Night' },
+  { id: 'day', label: 'Day', kanji: '昼' },
+  { id: 'dusk', label: 'Dusk', kanji: '夕' },
+  { id: 'night', label: 'Night', kanji: '夜' },
 ] as const;
+
+const links = [
+  { label: 'Work', href: '/#portfolio' },
+  { label: 'About', href: '/#about' },
+  { label: 'Certificates', href: '/certificates/' },
+];
+const year = new Date().getFullYear();
 ---
 
-<header class="fixed inset-x-0 top-0 z-40 flex items-center justify-end gap-2 px-4 py-3">
-  <button
-    type="button"
-    data-palette-trigger
-    aria-label="Open search"
-    class="flex items-center gap-2 rounded-full bg-paper/80 px-3 py-1.5 text-sm backdrop-blur"
-  >
-    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
-    </svg>
-    <span>Search</span>
-    <kbd data-palette-hint class="hidden rounded border border-ink/30 px-1 text-xs md:inline">Ctrl K</kbd>
-  </button>
-  <nav aria-label="Main">
-    <div role="group" aria-label="Sky theme" class="flex gap-1 rounded-full bg-paper/80 p-1 backdrop-blur">
-      {
-        themes.map((t) => (
-          <button
-            type="button"
-            data-sky-option={t.id}
-            aria-pressed={t.id === 'day' ? 'true' : 'false'}
-            class="rounded-full px-3 py-1 text-sm aria-pressed:bg-torii aria-pressed:text-paper"
-          >
-            {t.label}
-          </button>
-        ))
-      }
-    </div>
-  </nav>
+<!-- Over the Night Hero the bar re-scopes itself to Night (data-sky set by the script below). -->
+<header data-navbar class="navbar fixed inset-x-0 top-0 z-40 text-ink">
+  <div class="mx-auto flex max-w-[90rem] items-center gap-6 px-4 py-3 md:px-8 md:py-4">
+    <a href="/" class="display text-[1.65rem] tracking-tight" aria-label="Axel Chrisdy Sanjaya, home">
+      Axel C.S.
+    </a>
+    <p class="label hidden flex-1 text-center opacity-75 lg:block" aria-hidden="true">
+      Portfolio / {year} <span class="font-jp tracking-normal">— 怪盗の名刺</span>
+    </p>
+    <nav aria-label="Main" class="ml-auto flex items-center gap-5 md:gap-7 lg:ml-0">
+      <ul class="hidden items-center gap-5 md:flex">
+        {links.map((l) => <li><a class="label label-link" href={l.href}>{l.label}</a></li>)}
+      </ul>
+      <div role="group" aria-label="Sky theme" class="label flex items-center gap-2">
+        <span aria-hidden="true" class="hidden opacity-75 sm:inline">Sky /</span>
+        {
+          themes.map((t) => (
+            <button
+              type="button"
+              data-sky-option={t.id}
+              aria-label={t.label}
+              aria-pressed={t.id === 'day' ? 'true' : 'false'}
+              class="label label-link px-0.5 py-2"
+            >
+              <span aria-hidden="true" class="hidden sm:inline">{t.label}</span>
+              <span aria-hidden="true" class="font-jp text-sm tracking-normal sm:hidden">{t.kanji}</span>
+            </button>
+          ))
+        }
+      </div>
+      <button
+        type="button"
+        data-palette-trigger
+        aria-label="Open search"
+        class="label flex items-center gap-2 border border-current px-2.5 py-1.5 transition-colors hover:bg-ink hover:text-paper"
+      >
+        <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
+        </svg>
+        <span class="hidden sm:inline">Index</span>
+        <kbd data-palette-hint class="hidden font-[inherit] md:inline">Ctrl K</kbd>
+      </button>
+    </nav>
+  </div>
 </header>
 
 <CommandPalette client:idle items={paletteItems} />
@@ -81,7 +103,7 @@ const themes = [
   // Trigger and shortcut live here so they work before the palette island hydrates.
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   const hint = document.querySelector('[data-palette-hint]');
-  if (hint && isMac) hint.textContent = '⌘K';
+  if (hint && isMac) hint.textContent = '⌘ K';
 
   function openPalette() {
     window.__paletteRequested = true;
@@ -116,4 +138,28 @@ const themes = [
     }),
   );
   sync();
+
+  // While the Night Hero is under the bar, the bar wears Night too; past it, a washi backing keeps text legible.
+  const bar = document.querySelector<HTMLElement>('[data-navbar]');
+  const hero = document.querySelector('#hero');
+  function onScroll() {
+    if (!bar) return;
+    const overHero = hero ? hero.getBoundingClientRect().bottom > bar.offsetHeight : false;
+    if (overHero) bar.dataset.sky = 'night';
+    else delete bar.dataset.sky;
+    bar.toggleAttribute('data-solid', !overHero && window.scrollY > 8);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 </script>
+
+<style>
+  .navbar {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .navbar[data-solid] {
+    background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 1px 0 var(--color-rule);
+  }
+</style>
