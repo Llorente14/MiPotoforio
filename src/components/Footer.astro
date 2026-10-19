@@ -1,53 +1,70 @@
 ---
 import { getEntry } from 'astro:content';
+import StripedDisc from './StripedDisc.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
 const { name, socials } = entry.data;
 const year = new Date().getFullYear();
+
+// Ink grass, two rows: a soft back row and a sharp front row. Deterministic so every build matches.
+const row = (count: number, base: number, min: number, spread: number, seed: number) =>
+  Array.from({ length: count }, (_, i) => {
+    const x = (i / count) * 1200 + ((i * seed) % 9) - 4;
+    const h = min + ((i * (seed + 16)) % spread) + (i % 11 === 0 ? spread * 0.7 : 0);
+    const lean = ((i * (seed + 4)) % 15) - 7;
+    return `M${(x - 5).toFixed(1)} ${base} Q${(x + lean * 0.3).toFixed(1)} ${base - h * 0.55} ${(x + lean).toFixed(1)} ${base - h} Q${(x + lean * 0.15 + 2).toFixed(1)} ${base - h * 0.45} ${(x + 6).toFixed(1)} ${base}Z`;
+  }).join('');
+const back = row(110, 200, 40, 50, 23);
+const front = row(170, 200, 22, 44, 37);
 ---
 
-<footer class="relative mt-24 overflow-hidden pt-32">
+<footer class="relative mt-16 overflow-hidden pt-44">
   <!-- Stable hook for the sakura particles to land on the meadow's top edge. -->
-  <div id="meadow-top" data-meadow-top aria-hidden="true" class="absolute inset-x-0 top-[7.5rem] h-0"></div>
+  <div id="meadow-top" data-meadow-top aria-hidden="true" class="absolute inset-x-0 top-[8.5rem] h-0"></div>
 
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 1200 220"
-    preserveAspectRatio="none"
-    class="pointer-events-none absolute inset-x-0 top-0 h-56 w-full"
-  >
-    <g data-parallax="0.15" fill="#7cb342" opacity="0.55">
-      <path d="M0 120 Q150 60 300 110 T600 100 T900 110 T1200 90 V260 H0Z" />
-    </g>
-    <g data-parallax="0.3" fill="#558b2f" opacity="0.8">
-      <path d="M0 150 Q200 100 400 140 T800 130 T1200 140 V260 H0Z" />
-    </g>
-    <g data-parallax="0.5" fill="#33691e">
-      <path d="M0 180 Q250 140 500 175 T1000 165 T1200 175 V260 H0Z" />
-    </g>
-    <!-- Sakura tree silhouette -->
-    <g fill="#5d4037" transform="translate(940 20)">
-      <path d="M44 150 L48 90 Q40 70 20 55 L28 50 Q44 62 50 76 Q54 56 70 40 L76 46 Q60 62 56 90 L60 150Z" />
-    </g>
-    <g fill="#f4b6c2" opacity="0.9" transform="translate(940 20)">
-      <circle cx="20" cy="48" r="22" />
-      <circle cx="52" cy="30" r="28" />
-      <circle cx="84" cy="44" r="22" />
-      <circle cx="40" cy="64" r="18" />
-      <circle cx="72" cy="66" r="18" />
-    </g>
+  <StripedDisc class="footer__sun" bands={9} />
+  <svg aria-hidden="true" viewBox="0 0 1200 200" preserveAspectRatio="none" class="pointer-events-none absolute inset-x-0 top-6 h-40 w-full">
+    <g data-parallax="0.25" fill="#17140f" opacity="0.45"><path d={back} /></g>
+    <g data-parallax="0.5" fill="#0d0b08"><path d={front} /><rect y="196" width="1200" height="4" /></g>
   </svg>
 
-  <div class="relative mx-auto flex max-w-5xl flex-col items-center gap-4 bg-[#33691e] px-4 py-10 text-center text-white">
-    <ul class="flex flex-wrap justify-center gap-6">
-      <li><a class="underline" href={socials.github}>GitHub</a></li>
-      <li><a class="underline" href={socials.linkedin}>LinkedIn</a></li>
-      <li><a class="underline" href={`mailto:${socials.email}`}>Email</a></li>
-    </ul>
-    <p>© {year} {name}</p>
+  <div class="relative bg-[#0d0b08] text-[#ece4d0]">
+    <div class="mx-auto grid max-w-[90rem] gap-10 px-4 pb-10 pt-6 md:grid-cols-12 md:px-8">
+      <p class="font-jp text-[clamp(4rem,12vw,10rem)] leading-none md:col-span-7" lang="ja" aria-hidden="true">またね</p>
+      <div class="flex flex-col justify-end gap-6 md:col-span-5">
+        <p class="label opacity-75">Until the next card</p>
+        <ul class="flex flex-wrap gap-x-8 gap-y-3">
+          <li><a class="label label-link" href={socials.github}>GitHub</a></li>
+          <li><a class="label label-link" href={socials.linkedin}>LinkedIn</a></li>
+          <li><a class="label label-link" href={`mailto:${socials.email}`}>Email</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto flex max-w-[90rem] flex-wrap justify-between gap-3 border-t border-[#ece4d0]/15 px-4 py-5 md:px-8">
+      <p class="label opacity-80">© {year} {name}</p>
+      <p class="label opacity-75">Printed in Jakarta · 6°10′S 106°47′E</p>
+    </div>
   </div>
 </footer>
+
+<style>
+  footer :global(.footer__sun) {
+    position: absolute;
+    left: 50%;
+    top: 0.5rem;
+    width: 11rem;
+    translate: -50% 0;
+    color: var(--sky-body);
+    opacity: 0.85;
+  }
+  footer .label-link {
+    text-decoration-color: rgb(236 228 208 / 0.35);
+  }
+  footer .label-link:hover {
+    text-decoration-color: currentColor;
+  }
+</style>
 
 <script>
   const layers = document.querySelectorAll<SVGGElement>('[data-parallax]');
