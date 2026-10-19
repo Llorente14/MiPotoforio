@@ -1,4 +1,4 @@
-"""Procedural low-poly UNTAR Building 2 (Universitas Tarumanagara).
+"""Procedural cel-shaded UNTAR Building 2 (Universitas Tarumanagara).
 
 Run from the repo root:
     blender -b --factory-startup -P blender/untar.py
@@ -12,13 +12,13 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 import bpy  # noqa: E402
-from lowpoly import cur, export_and_render, join, keep, mat  # noqa: E402
+from toon import cur, export_and_render, join, keep, mat  # noqa: E402
 
 CLADDING = mat("Cladding", "#d9d3c7", rough=0.5)
 RIB = mat("Rib", "#b9b2a4", rough=0.5)
-GLASS = mat("Glass", "#2f6fc0", rough=0.12, metal=0.35)
+GLASS = mat("Glass", "#4a78b0", rough=0.12, metal=0.35)
 FRAME = mat("Frame", "#9aa3ad", rough=0.4, metal=0.4)
-STRIPE = mat("Stripe", "#2a8be0", rough=0.3)
+STRIPE = mat("Stripe", "#2d4f9e", rough=0.3)
 CONCRETE = mat("Concrete", "#c7c9cc", rough=0.8)
 EMBLEM = mat("Emblem", "#3a3d42", rough=0.5)
 LETTER = mat("Letter", "#e9e6df", rough=0.4)
@@ -87,6 +87,6 @@ block(-0.36, 0.16, -0.56, 0.25, 2.62, 2.66, CONCRETE)  # top canopy
 block(-0.34, -0.32, -0.52, 0.25, 0.36, 2.62, FRAME)  # corner mullions
 block(0.12, 0.14, -0.52, 0.25, 0.36, 2.62, FRAME)
 
-join("Untar").scale.z = 1.35  # the real tower is slender
+join("Untar", smooth_angle=30).scale.z = 1.35  # the real tower is slender
 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-export_and_render("untar", cam_loc=(-2.8, -5.6, 1.1), target=(-0.1, 0, 2.05), lens=42, res=(900, 1200))
+export_and_render("untar", cam_loc=(-2.8, -5.6, 1.1), target=(-0.1, 0, 2.05), lens=42, res=(900, 1200), outline=0.016)

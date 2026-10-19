@@ -1,4 +1,4 @@
-"""Procedural low-poly three-storey pagoda in the style of Kiyomizu-dera's Sanjunoto.
+"""Procedural cel-shaded three-storey pagoda in the style of Kiyomizu-dera's Sanjunoto.
 
 Run from the repo root:
     blender -b --factory-startup -P blender/temple.py
@@ -11,7 +11,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 import bpy  # noqa: E402
-from lowpoly import ball, cur, export_and_render, join, keep, limb, mat  # noqa: E402
+from toon import ball, cur, export_and_render, join, keep, limb, mat  # noqa: E402
 
 VERMILION = mat("Vermilion", "#e04a30", rough=0.5)
 DARK_RED = mat("DarkRed", "#8e2a22", rough=0.6)
@@ -88,13 +88,13 @@ for k in range(7):
     bpy.ops.mesh.primitive_cylinder_add(vertices=10, radius=0.085 - k * 0.006, depth=0.018,
                                         location=(0, 0, top + 0.12 + k * 0.08))
     keep(cur(), GOLD)
-ball((0, 0, top + 0.86), 0.05, GOLD, sub=2)
+ball((0, 0, top + 0.86), 0.05, GOLD)
 
-join("Temple")
+join("Temple", smooth_angle=30)
 
 # shadowless fill from the camera side so the vermilion walls under the eaves don't go brown
 fill = bpy.data.objects.new("Fill", bpy.data.lights.new("Fill", "SUN"))
 fill.data.energy, fill.data.use_shadow = 2.0, False
 fill.rotation_euler = (1.35, 0, 0.62)
 bpy.context.collection.objects.link(fill)
-export_and_render("temple", cam_loc=(3.3, -4.6, 1.5), target=(0, 0, 1.55), lens=40, res=(900, 1200))
+export_and_render("temple", cam_loc=(3.3, -4.6, 1.5), target=(0, 0, 1.55), lens=40, res=(900, 1200), outline=0.014)

@@ -39,3 +39,7 @@ playwright-report/
 
 # python bytecode (blender scripts)
 __pycache__/
+
+# generated asset cache and local design tooling
+blender/.cache/
+.impeccable/

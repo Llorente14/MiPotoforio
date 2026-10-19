@@ -1,4 +1,4 @@
-"""Procedural low-poly Akai Shuichi (fan art), kneeling with a sniper rifle.
+"""Procedural cel-shaded Akai Shuichi (fan art), kneeling with a sniper rifle.
 
 Run from the repo root:
     blender -b --factory-startup -P blender/akai.py
@@ -12,7 +12,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 import bpy  # noqa: E402
-from lowpoly import ball, box, cur, export_and_render, join, keep, limb, mat, spike  # noqa: E402
+from toon import ball, box, cur, export_and_render, join, keep, limb, mat, spike  # noqa: E402
 
 JACKET = mat("Jacket", "#1f2226", rough=0.45)
 SHIRT = mat("Shirt", "#34325a")
@@ -45,8 +45,8 @@ limb((0, -0.1, 1.02), (0, -0.12, 1.12), 0.045, SKIN)  # neck
 
 # ---------- head: cheek on the stock, beanie, curly fringe ----------
 head = (-0.03, -0.12, 1.2)
-ball(head, 0.11, SKIN, scale=(1, 1, 1.12), sub=2)
-ball((head[0], head[1] + 0.01, head[2] + 0.05), 0.12, BEANIE, scale=(1.02, 1.05, 0.85), sub=2)
+ball(head, 0.11, SKIN, scale=(1, 1, 1.12))
+ball((head[0], head[1] + 0.01, head[2] + 0.05), 0.12, BEANIE, scale=(1.02, 1.05, 0.85))
 limb((head[0], head[1] + 0.01, 1.2), (head[0], head[1] + 0.01, 1.24), 0.118, BEANIE, verts=12)  # folded brim
 for i in range(7):  # hair peeking out at the back and sides
     a = math.radians(-60 + i * 20)
@@ -64,7 +64,7 @@ for s, e, h in ((sR, eR, hR), (sL, eL, hL)):
     ball(e, 0.055, JACKET)
     limb(e, h, 0.048, JACKET)
     ball(h, 0.04, SKIN, scale=(0.9, 1.2, 0.8))
-body = join("Akai")
+body = join("Akai", smooth_angle=50)
 
 # ---------- rifle (separate node for recoil) along -Y, scope at eye height ----------
 X, Z = -0.08, 1.08
@@ -81,7 +81,7 @@ for y in (-0.33, -0.48):  # scope rings
     box((X, y, Z + 0.03), (X, y, Z + 0.07), 0.03, 0.02, GUNMETAL)
 for sx in (-1, 1):  # folded bipod
     limb((X, -0.6, Z - 0.03), (X + sx * 0.03, -0.75, Z - 0.08), 0.007, GUNMETAL, verts=4)
-rifle = join("Rifle")
+rifle = join("Rifle", smooth_angle=35)
 
 # turn the scene so the rifle aims at the viewer's front-left
 for o in (body, rifle):
@@ -98,4 +98,4 @@ for o in (body, rifle):
     o.matrix_world = mw
 bpy.data.objects.remove(pivot)
 
-export_and_render("akai", cam_loc=(1.7, -2.6, 1.0), target=(0, -0.35, 0.6))
+export_and_render("akai", cam_loc=(1.7, -2.6, 1.0), target=(0, -0.35, 0.6), lens=45, res=(1200, 900), outline=0.005)

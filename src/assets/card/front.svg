@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">
+  <defs>
+    <symbol id="kc-club" viewBox="-50 -52 100 104">
+      <circle cx="0" cy="-24" r="22" />
+      <circle cx="-24" cy="8" r="22" />
+      <circle cx="24" cy="8" r="22" />
+      <path d="M-5 4 C-4 26 -12 40 -24 50 H24 C12 40 4 26 5 4 Z" />
+    </symbol>
+    <clipPath id="kc-disc"><circle cx="500" cy="640" r="250" /></clipPath>
+    <filter id="kc-fibre" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="7" />
+      <feColorMatrix values="0 0 0 0 0.42 0 0 0 0 0.35 0 0 0 0 0.24 0 0 0 0.5 0" />
+    </filter>
+  </defs>
+
+  <!-- washi stock -->
+  <rect width="1000" height="1400" rx="56" fill="#f2ebd9" />
+  <rect width="1000" height="1400" rx="56" filter="url(#kc-fibre)" opacity="0.35" />
+
+  <!-- double frame -->
+  <rect x="44" y="44" width="912" height="1312" rx="26" fill="none" stroke="#17140f" stroke-width="7" />
+  <rect x="64" y="64" width="872" height="1272" rx="14" fill="none" stroke="#17140f" stroke-width="2" />
+
+  <!-- corner indices -->
+  <g id="kc-index" fill="#17140f">
+    <text x="128" y="214" text-anchor="middle" font-family="Archivo Variable, Archivo, Arial Narrow, sans-serif" font-stretch="62%" font-weight="800" font-size="150">A</text>
+    <use href="#kc-club" x="88" y="236" width="80" height="84" />
+  </g>
+  <g transform="rotate(180 500 700)" fill="#17140f">
+    <text x="128" y="214" text-anchor="middle" font-family="Archivo Variable, Archivo, Arial Narrow, sans-serif" font-stretch="62%" font-weight="800" font-size="150">A</text>
+    <use href="#kc-club" x="88" y="236" width="80" height="84" />
+  </g>
+
+  <!-- striped shu disc -->
+  <g clip-path="url(#kc-disc)" fill="#c23a22">
+    <rect x="250" y="390" width="500" height="262" />
+    <rect x="250" y="662" width="500" height="26" />
+    <rect x="250" y="697" width="500" height="22" />
+    <rect x="250" y="729" width="500" height="19" />
+    <rect x="250" y="759" width="500" height="16" />
+    <rect x="250" y="787" width="500" height="13" />
+    <rect x="250" y="813" width="500" height="10" />
+    <rect x="250" y="837" width="500" height="8" />
+    <rect x="250" y="860" width="500" height="6" />
+    <rect x="250" y="881" width="500" height="4" />
+  </g>
+
+  <!-- the doodle: top hat, monocle, grin -->
+  <g stroke="#17140f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M404 520 L420 372 Q500 356 580 372 L596 520 Z" fill="#17140f" stroke-width="10" />
+    <path d="M410 470 Q500 482 590 470 L594 506 Q500 520 406 506 Z" fill="#f2ebd9" stroke="none" />
+    <path d="M318 534 Q500 498 682 528 Q700 548 668 560 Q500 590 334 566 Q300 556 318 534 Z" fill="#17140f" stroke-width="8" />
+    <path d="M418 646 Q446 626 474 646" fill="none" stroke-width="13" />
+    <circle cx="566" cy="648" r="48" fill="#f2ebd9" stroke-width="12" />
+    <circle cx="566" cy="648" r="30" fill="none" stroke-width="3" opacity="0.5" />
+    <path d="M604 678 Q660 760 616 842" fill="none" stroke-width="5" />
+    <path d="M388 716 Q500 742 612 716 Q574 812 500 816 Q426 812 388 716 Z" fill="#f2ebd9" stroke-width="12" />
+    <path d="M436 728 V790 M468 732 V806 M500 734 V814 M532 732 V806 M564 728 V790" fill="none" stroke-width="6" />
+  </g>
+  <use href="#kc-club" x="594" y="836" width="44" height="46" fill="#17140f" />
+
+  <!-- name plate -->
+  <text x="500" y="1010" text-anchor="middle" fill="#17140f" font-family="Archivo Variable, Archivo, Arial Narrow, sans-serif" font-stretch="62%" font-weight="800" font-size="88" letter-spacing="6">KAITO KID</text>
+  <text x="500" y="1062" text-anchor="middle" fill="#17140f" font-family="Archivo Variable, Archivo, Arial Narrow, sans-serif" font-weight="600" font-size="24" letter-spacing="9">CALLING CARD · No. 1412</text>
+  <line x1="380" y1="1094" x2="620" y2="1094" stroke="#17140f" stroke-width="2" />
+
+  <!-- hanko seal -->
+  <g transform="rotate(-4 196 1160)">
+    <rect x="128" y="1090" width="136" height="136" rx="12" fill="#c23a22" />
+    <rect x="140" y="1102" width="112" height="112" rx="6" fill="none" stroke="#f2ebd9" stroke-width="3" />
+    <text x="196" y="1152" text-anchor="middle" fill="#f2ebd9" font-family="Shippori Mincho, Yu Mincho, serif" font-weight="700" font-size="50">怪</text>
+    <text x="196" y="1204" text-anchor="middle" fill="#f2ebd9" font-family="Shippori Mincho, Yu Mincho, serif" font-weight="700" font-size="50">盗</text>
+  </g>
+</svg>

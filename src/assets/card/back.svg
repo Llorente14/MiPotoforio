@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">
+  <defs>
+    <!-- hishi (diamond lattice) in kincha gold -->
+    <pattern id="kb-hishi" width="64" height="112" patternUnits="userSpaceOnUse" x="20" y="16">
+      <path d="M32 0 L64 56 L32 112 L0 56 Z M32 22 L51 56 L32 90 L13 56 Z" fill="none" stroke="#b08a3e" stroke-width="2.4" />
+      <circle cx="32" cy="56" r="3" fill="#b08a3e" />
+    </pattern>
+    <clipPath id="kb-disc"><circle cx="500" cy="700" r="170" /></clipPath>
+  </defs>
+
+  <rect width="1000" height="1400" rx="56" fill="#141c30" />
+  <rect x="44" y="44" width="912" height="1312" rx="26" fill="none" stroke="#b08a3e" stroke-width="6" />
+  <rect x="80" y="80" width="840" height="1240" rx="10" fill="url(#kb-hishi)" opacity="0.55" />
+  <rect x="80" y="80" width="840" height="1240" rx="10" fill="none" stroke="#b08a3e" stroke-width="2" />
+
+  <!-- centre medallion: washi moon on an indigo ground -->
+  <circle cx="500" cy="700" r="214" fill="#141c30" />
+  <circle cx="500" cy="700" r="200" fill="none" stroke="#b08a3e" stroke-width="3" />
+  <g clip-path="url(#kb-disc)" fill="#ece4d0">
+    <rect x="330" y="530" width="340" height="178" />
+    <rect x="330" y="716" width="340" height="18" />
+    <rect x="330" y="742" width="340" height="15" />
+    <rect x="330" y="765" width="340" height="12" />
+    <rect x="330" y="786" width="340" height="9" />
+    <rect x="330" y="805" width="340" height="7" />
+    <rect x="330" y="822" width="340" height="5" />
+    <rect x="330" y="838" width="340" height="3" />
+  </g>
+  <text x="500" y="1000" text-anchor="middle" fill="#b08a3e" font-family="Archivo Variable, Archivo, Arial Narrow, sans-serif" font-weight="600" font-size="26" letter-spacing="14">No. 1412</text>
+</svg>

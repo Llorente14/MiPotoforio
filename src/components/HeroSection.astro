@@ -1,6 +1,7 @@
 ---
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
+import cardFront from '../assets/card/front.svg?url';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -31,7 +32,7 @@ const { name } = entry.data;
   <!-- The thrown card. Decorative; the transition script animates it. -->
   <img
     data-hero-card
-    src="/textures/card-front.png"
+    src={cardFront}
     alt=""
     aria-hidden="true"
     width="256"

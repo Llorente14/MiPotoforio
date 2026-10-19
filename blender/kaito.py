@@ -1,287 +1,178 @@
-"""Procedural low-poly Kaito Kid (fan art) in a card-flick pose.
+"""Cel-shaded Kaito Kid (fan art), waist-up close-up, flicking his calling card.
 
-Run from the repo root:
+Run from the repo root (the card textures come from the vector card first):
+    node scripts/card-textures.mjs
     blender -b --factory-startup -P blender/kaito.py
 
-Outputs:
-    public/models/kaito.glb        nodes: "Kaito" (body) and "Card" (animate this one)
-    public/renders/kaito.webp      still render for phones / no-WebGL
-    public/textures/card-front.png, card-back.png   for the 2D card fallback
+Outputs public/models/kaito.glb (nodes "Kaito" and "Card"; animate the card) and public/renders/kaito.webp.
+Faces -Y, z up, metres. His right hand (screen left) holds the card beside his face.
 """
 import math
 import os
+import sys
 
-import bpy
-import numpy as np
-from mathutils import Vector
+sys.path.append(os.path.dirname(__file__))
+import bpy  # noqa: E402
+from toon import (CACHE, ball, box, cur, export_and_render, join, keep, limb, loft, mat, poly,  # noqa: E402
+                  strand)
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-OUT_MODEL = os.path.join(ROOT, "public", "models")
-OUT_RENDER = os.path.join(ROOT, "public", "renders")
-OUT_TEX = os.path.join(ROOT, "public", "textures")
-for d in (OUT_MODEL, OUT_RENDER, OUT_TEX):
-    os.makedirs(d, exist_ok=True)
+SUIT = mat("Suit", "#f3f0e8", rough=0.5)
+LINING = mat("Lining", "#dfe3ee")
+SHIRT = mat("Shirt", "#2d4f9e")
+TIE = mat("Tie", "#c23a2e")
+BAND = mat("HatBand", "#2d4f9e")
+SKIN = mat("Skin", "#f2d3ba")
+HAIR = mat("Hair", "#2a221e")
+EYE = mat("Eye", "#1f2f5c")
+SILVER = mat("Silver", "#c9ced6", rough=0.25, metal=1.0)
+CLOVER = mat("Clover", "#2f8a57")
 
-bpy.ops.wm.read_factory_settings(use_empty=True)
+# ------------------------------------------------------------------ torso (waist up)
+loft("Jacket", [
+    ((0, 0.01, 0.9), 0.165, 0.112),
+    ((0, 0.01, 1.05), 0.158, 0.106),
+    ((0, 0.0, 1.2), 0.178, 0.112),
+    ((0, 0.0, 1.32), 0.2, 0.118),
+    ((0, 0.0, 1.4), 0.195, 0.108),
+    ((0, 0.0, 1.45), 0.12, 0.08),
+], SUIT, caps=(True, True))
+for sx in (-1, 1):  # shoulder pads
+    ball((0.18 * sx, 0.0, 1.4), 0.07, SUIT, scale=(1.05, 0.95, 0.6))
 
-# ---------- materials ----------
-def mat(name, hex_color, rough=0.6, metal=0.0, image=None):
-    m = bpy.data.materials.new(name)
-    m.use_nodes = True
-    bsdf = m.node_tree.nodes["Principled BSDF"]
-    c = int(hex_color[1:], 16)
-    bsdf.inputs["Base Color"].default_value = ((c >> 16) / 255, (c >> 8 & 255) / 255, (c & 255) / 255, 1)
-    bsdf.inputs["Roughness"].default_value = rough
-    bsdf.inputs["Metallic"].default_value = metal
-    if image:
-        tex = m.node_tree.nodes.new("ShaderNodeTexImage")
-        tex.image = image
-        m.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    return m
+# shirt V, tie and lapels sit just proud of the jacket front (front surface ~ y = -0.115)
+poly("ShirtV", [(-0.066, -0.118, 1.43), (0.066, -0.118, 1.43), (0.0, -0.124, 1.2)], [(2, 1, 0)], SHIRT, smooth=False)
+poly("Tie", [(-0.021, -0.127, 1.425), (0.021, -0.127, 1.425), (0.03, -0.13, 1.22), (0.0, -0.133, 1.17),
+             (-0.03, -0.13, 1.22)], [(4, 3, 2, 1, 0)], TIE, smooth=False)
+box((0, -0.125, 1.405), (0, -0.125, 1.43), 0.05, 0.02, TIE, bevel=0.006)  # knot
+for sx in (-1, 1):
+    poly("Lapel", [(0.07 * sx, -0.12, 1.44), (0.11 * sx, -0.122, 1.38), (0.064 * sx, -0.128, 1.3),
+                   (0.005 * sx, -0.126, 1.19), (0.05 * sx, -0.121, 1.42)],
+         [(0, 1, 2, 3, 4) if sx > 0 else (4, 3, 2, 1, 0)], SUIT, smooth=False)
+ball((0.0, -0.118, 1.12), 0.011, SUIT)  # jacket button
 
-WHITE = mat("Suit", "#f4f3ef")
-SHIRT = mat("Shirt", "#2a5db0")
-TIE = mat("Tie", "#e0607e")
-BAND = mat("HatBand", "#1f6fc4")
-SKIN = mat("Skin", "#f2d0b4")
-HAIR = mat("Hair", "#2b211f")
-SILVER = mat("Monocle", "#c9ced6", rough=0.25, metal=1.0)
-CLOVER = mat("Clover", "#3c9a5f")
-
-parts = []
-
-
-def keep(obj, material):
-    obj.data.materials.append(material)
-    parts.append(obj)
-    return obj
-
-
-def cur():
-    return bpy.context.active_object
-
-
-# ---------- shape helpers ----------
-def limb(a, b, r, material, verts=8):
-    a, b = Vector(a), Vector(b)
-    d = b - a
-    bpy.ops.mesh.primitive_cylinder_add(vertices=verts, radius=r, depth=d.length, location=(a + b) / 2)
-    o = cur()
-    o.rotation_mode = "QUATERNION"
-    o.rotation_quaternion = d.to_track_quat("Z", "Y")
-    return keep(o, material)
-
-
-def ball(p, r, material, scale=(1, 1, 1), sub=1):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=sub, radius=r, location=p)
-    o = cur()
-    o.scale = scale
-    return keep(o, material)
-
-
-def spike(p, direction, r, length, material):
-    d = Vector(direction).normalized()
-    bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=r, radius2=0, depth=length, location=Vector(p) + d * length / 2)
-    o = cur()
-    o.rotation_mode = "QUATERNION"
-    o.rotation_quaternion = d.to_track_quat("Z", "Y")
-    return keep(o, material)
-
-
-def poly(name, verts, faces, material):
-    me = bpy.data.meshes.new(name)
-    me.from_pydata(verts, [], faces)
-    o = bpy.data.objects.new(name, me)
-    bpy.context.collection.objects.link(o)
-    return keep(o, material)
-
-
-# ---------- body (faces -Y, feet at z=0, metres) ----------
-# legs: slight contrapposto
-for hip, knee, ankle in (((-0.1, 0, 0.95), (-0.1, -0.04, 0.5), (-0.11, -0.03, 0.08)),
-                         ((0.1, 0, 0.95), (0.12, 0.01, 0.5), (0.14, 0.04, 0.08))):
-    limb(hip, knee, 0.07, WHITE)
-    ball(knee, 0.07, WHITE)
-    limb(knee, ankle, 0.06, WHITE)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(ankle[0], ankle[1] - 0.05, 0.04))
-    cur().scale = (0.1, 0.24, 0.08)
-    keep(cur(), WHITE)
-
-# torso + jacket tails
-bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.17, radius2=0.21, depth=0.5, location=(0, 0, 1.18))
-cur().scale = (1, 0.65, 1)
-keep(cur(), WHITE)
-bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.2, radius2=0.17, depth=0.24, location=(0, 0, 0.84))
-cur().scale = (1, 0.7, 1)
-keep(cur(), WHITE)
-for sx in (-1, 1):  # shoulder ruffles
-    ball((0.2 * sx, 0, 1.42), 0.07, WHITE, scale=(1.2, 1, 0.7))
-
-# shirt V + tie on the chest
-poly("ShirtV", [(-0.075, -0.137, 1.43), (0.075, -0.137, 1.43), (0, -0.142, 1.13)], [(2, 1, 0)], SHIRT)
-poly("Tie", [(-0.02, -0.146, 1.41), (0.02, -0.146, 1.41), (0.028, -0.148, 1.2), (0, -0.15, 1.15), (-0.028, -0.148, 1.2)],
-     [(4, 3, 2, 1, 0)], TIE)
-
-# right arm: raised, flicking the card (character's right = -X)
-sR, eR, wR = (-0.22, 0, 1.4), (-0.4, -0.1, 1.52), (-0.46, -0.28, 1.7)
-limb(sR, eR, 0.055, WHITE)
-ball(eR, 0.055, WHITE)
-limb(eR, wR, 0.048, WHITE)
-ball(wR, 0.045, WHITE, scale=(0.8, 1.2, 1))
-# left arm: hand in pocket
-sL, eL, wL = (0.22, 0, 1.4), (0.31, 0.04, 1.15), (0.2, -0.05, 0.96)
-limb(sL, eL, 0.055, WHITE)
-ball(eL, 0.055, WHITE)
-limb(eL, wL, 0.048, WHITE)
-
-# neck + head
-limb((0, 0, 1.42), (0, 0, 1.53), 0.045, SKIN)
-ball((0, 0, 1.62), 0.115, SKIN, scale=(1, 1, 1.12), sub=2)
-
-# messy hair: spikes around the back/sides + fringe
-for i in range(9):
-    a = math.radians(-20 + i * 25)  # sweep around the back
-    p = (0.1 * math.sin(a), 0.1 * math.cos(a), 1.66)
-    spike(p, (math.sin(a), math.cos(a), -0.6), 0.04, 0.11, HAIR)
-for x in (-0.06, -0.02, 0.025, 0.065):
-    spike((x, -0.08, 1.71), (x * 2, -0.5, -1), 0.035, 0.09, HAIR)
-
-# monocle on the right eye + string down to the lapel with a clover charm
-bpy.ops.mesh.primitive_torus_add(major_radius=0.034, minor_radius=0.006, major_segments=12, minor_segments=4,
-                                 location=(-0.045, -0.118, 1.625), rotation=(math.radians(90), 0, 0))
-keep(cur(), SILVER)
-limb((-0.05, -0.12, 1.59), (-0.075, -0.135, 1.47), 0.0025, SILVER, verts=4)
-ball((-0.075, -0.137, 1.46), 0.012, CLOVER)
-
-# top hat, tilted
-hat = []
-for r, depth, z, m in ((0.19, 0.015, 0.0, WHITE), (0.11, 0.24, 0.12, WHITE), (0.113, 0.04, 0.03, BAND)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=r, depth=depth, location=(0, 0, z))
-    hat.append(keep(cur(), m))
-pivot = bpy.data.objects.new("HatPivot", None)
-bpy.context.collection.objects.link(pivot)
-pivot.location = (0.01, 0.01, 1.72)
-pivot.rotation_euler = (math.radians(-6), math.radians(8), 0)
-for h in hat:
-    h.parent = pivot
-
-# cape: wind-blown sheet sweeping to the character's left (+X)
-nu, nv = 10, 14
-verts = []
+# ------------------------------------------------------------------ cape (behind, billowing to his left)
+nu, nv = 18, 12
+cv = []
 for j in range(nv + 1):
     v = j / nv
     for i in range(nu + 1):
         u = i / nu
-        x = (-0.22 - 0.15 * v) + u * (0.44 + 0.9 * v)
-        y = 0.1 + 0.35 * v + 0.06 * math.sin(u * math.tau + v * 3) * v
-        z = 1.42 - 1.25 * v + 0.3 * u * v * v
-        verts.append((x, y, z))
-faces = [(j * (nu + 1) + i, j * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i)
-         for j in range(nv) for i in range(nu)]
-cape = poly("Cape", verts, faces, WHITE)
-cape.modifiers.new("Thickness", "SOLIDIFY").thickness = 0.012
+        theta = math.radians(-80 + 160 * u)  # sweep around the back
+        r = 0.2 + 0.2 * v + (0.14 * v * v if u > 0.5 else 0.04 * v)
+        flutter = 0.025 * math.sin(u * 9 + v * 4) * v
+        cv.append((math.sin(theta) * r + 0.12 * v * v * (u - 0.3), math.cos(theta) * r * 0.75 + 0.03 + flutter,
+                   1.44 - 0.62 * v + 0.12 * v * v * u))
+cf = [(j * (nu + 1) + i, j * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i)
+      for j in range(nv) for i in range(nu)]
+cape = poly("Cape", cv, cf, SUIT)
+cape.data.materials.append(LINING)
+for p in cape.data.polygons:  # blue-grey lining on the inner face via solidify's rim/shell material offset
+    p.material_index = 0
+sol = cape.modifiers.new("Thickness", "SOLIDIFY")
+sol.thickness, sol.material_offset = 0.012, 1
+cape.modifiers.new("Smooth", "SUBSURF").levels = 1
 
-# join everything except the card into one mesh named "Kaito"
-bpy.ops.object.select_all(action="DESELECT")
-for o in parts:
-    o.select_set(True)
-    bpy.context.view_layer.objects.active = o
-    bpy.ops.object.modifier_apply(modifier="Thickness") if o.modifiers else None
-bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
-# bake transforms first, otherwise the joined node inherits the first part's rotation
-bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-bpy.ops.object.join()
-body = cur()
-body.name = body.data.name = "Kaito"
+# ------------------------------------------------------------------ neck and head
+loft("Neck", [((0, 0.0, 1.43), 0.045, 0.045), ((0, -0.005, 1.53), 0.042, 0.042)], SKIN, n=16)
+HEAD = (0.0, -0.01, 1.64)
+ball(HEAD, 0.112, SKIN, scale=(0.95, 0.98, 1.06), segs=32)
+ball((0.0, -0.05, 1.575), 0.072, SKIN, scale=(0.95, 0.9, 1.0), segs=24)  # jaw, tapering to an anime chin
+for sx in (-1, 1):
+    ball((0.105 * sx, -0.005, 1.63), 0.022, SKIN, scale=(0.5, 1.0, 1.3))  # ears
+# eyes (his left eye; the monocle covers the right), brows and a smirk
+ball((0.042, -0.103, 1.645), 0.019, EYE, scale=(0.75, 0.35, 1.15))
+strand([(0.022, -0.106, 1.677), (0.045, -0.11, 1.684), (0.068, -0.1, 1.678)], 0.0045, HAIR, taper=(0.6, 1.0))
+strand([(-0.022, -0.106, 1.677), (-0.045, -0.11, 1.682), (-0.068, -0.1, 1.672)], 0.0045, HAIR, taper=(0.6, 1.0))
+ball((-0.042, -0.103, 1.645), 0.017, EYE, scale=(0.75, 0.35, 1.1))
+strand([(-0.03, -0.098, 1.575), (0.0, -0.104, 1.571), (0.03, -0.1, 1.58)], 0.003, HAIR, taper=(0.8, 1.0))
+
+# messy hair: spiky locks flaring out from under the hat brim, each with its own kick
+for i in range(15):
+    a = math.radians(-120 + i * 17)
+    kick = (0.06, -0.04, 0.03, -0.06, 0.0)[i % 5]
+    root = (0.1 * math.sin(a), 0.1 * math.cos(a) - 0.01, 1.715)
+    mid = (0.15 * math.sin(a + 0.1), 0.14 * math.cos(a + 0.1), 1.68 + kick * 0.3)
+    tip = (0.2 * math.sin(a + 0.22), 0.17 * math.cos(a + 0.22), 1.63 + kick)
+    strand([root, mid, tip], 0.032, HAIR, taper=(1.0, 0.0))
+# fringe: pointed bangs falling over the brow, alternating length
+for x, dx, z in ((-0.085, -0.045, 1.645), (-0.05, -0.02, 1.62), (-0.015, 0.0, 1.655), (0.02, 0.02, 1.625),
+                 (0.055, 0.04, 1.65), (0.09, 0.06, 1.64)):
+    strand([(x * 0.7, -0.06, 1.74), (x, -0.108, 1.71), (x + dx, -0.12, z)], 0.026, HAIR, taper=(1.0, 0.0))
+ball((0.0, -0.112, 1.615), 0.011, SKIN, scale=(0.8, 1.0, 1.2))  # nose
+for sx in (-1, 1):  # shirt collar points either side of the knot
+    poly("ShirtCollar", [(0.012 * sx, -0.125, 1.44), (0.06 * sx, -0.112, 1.47), (0.05 * sx, -0.123, 1.405)],
+         [(0, 1, 2) if sx > 0 else (2, 1, 0)], SUIT, smooth=False)
+ball((0.0, 0.0, 1.69), 0.108, HAIR, scale=(1.02, 1.04, 0.62))  # hair mass under the hat
+
+# ------------------------------------------------------------------ top hat (tilted toward his left)
+hat = []
+loft("Crown", [((0, 0, 0.0), 0.112, 0.104), ((0, 0, 0.12), 0.106, 0.098), ((0, 0, 0.215), 0.112, 0.104)],
+     SUIT, n=32, sub=1)
+hat.append(cur())
+loft("Band", [((0, 0, 0.004), 0.116, 0.108), ((0, 0, 0.05), 0.112, 0.104)], BAND, n=32, sub=1)
+hat.append(cur())
+loft("Brim", [((0, 0, -0.008), 0.198, 0.184), ((0, 0, 0.0), 0.204, 0.19), ((0, 0, 0.008), 0.198, 0.184)], SUIT, n=48, sub=0)
+hat.append(cur())
+pivot = bpy.data.objects.new("HatPivot", None)
+bpy.context.collection.objects.link(pivot)
+pivot.location = (0.012, 0.004, 1.735)
+pivot.rotation_euler = (math.radians(-8), math.radians(9), math.radians(4))
+for h in hat:
+    h.parent = pivot
+
+# ------------------------------------------------------------------ monocle over his right eye, cord to the lapel
+bpy.ops.mesh.primitive_torus_add(major_radius=0.034, minor_radius=0.0045, major_segments=32, minor_segments=8,
+                                 location=(-0.043, -0.112, 1.645), rotation=(math.radians(90), 0, 0))
+keep(cur(), SILVER)
+strand([(-0.07, -0.118, 1.625), (-0.1, -0.13, 1.55), (-0.095, -0.135, 1.46), (-0.08, -0.128, 1.39)], 0.0022, SILVER,
+       taper=(1, 1))
+for ox, oz in ((0, 0.012), (-0.011, 0.0), (0.011, 0.0)):  # clover charm
+    ball((-0.08 + ox, -0.132, 1.37 + oz), 0.008, CLOVER, segs=12)
+strand([(-0.08, -0.132, 1.37), (-0.084, -0.134, 1.352)], 0.002, CLOVER, taper=(1, 1))
+
+# ------------------------------------------------------------------ arms
+# his right arm: raised, hand beside the face flicking the card (screen left)
+sR, eR, wR = (-0.2, -0.0, 1.38), (-0.33, -0.13, 1.25), (-0.25, -0.2, 1.53)
+limb(sR, eR, 0.062, SUIT, r2=0.056)
+ball(eR, 0.056, SUIT)
+limb(eR, wR, 0.055, SUIT, r2=0.048)
+loft("CuffR", [((0, 0, 0), 0.05, 0.05), ((0, 0, 0.022), 0.05, 0.05)], SHIRT, n=16, sub=0)
+cuff = cur()
+cuff.location = wR
+cuff.rotation_mode = "QUATERNION"
+from mathutils import Vector  # noqa: E402
+
+cuff.rotation_quaternion = (Vector(wR) - Vector(eR)).to_track_quat("Z", "Y")
+# gloved hand: palm, two extended fingers (index, middle) pinching the card, curled ring/little fingers, thumb
+palm = (-0.245, -0.215, 1.585)
+ball(palm, 0.042, SUIT, scale=(0.85, 0.6, 1.1))
+for dx, length in ((-0.012, 0.075), (0.012, 0.082)):
+    strand([(palm[0] + dx, palm[1] - 0.01, palm[2] + 0.035), (palm[0] + dx * 1.3, palm[1] - 0.03, palm[2] + 0.07),
+            (palm[0] + dx * 1.6 - 0.015, palm[1] - 0.055, palm[2] + 0.035 + length)], 0.013, SUIT, taper=(1, 0.75))
+for dx in (0.03, 0.042):
+    strand([(palm[0] + dx * 0.6, palm[1] - 0.012, palm[2] + 0.03), (palm[0] + dx, palm[1] - 0.045, palm[2] + 0.04),
+            (palm[0] + dx * 0.8, palm[1] - 0.04, palm[2] + 0.005)], 0.012, SUIT, taper=(1, 0.8))
+strand([(palm[0] + 0.03, palm[1], palm[2] - 0.02), (palm[0] + 0.05, palm[1] - 0.04, palm[2] + 0.0),
+        (palm[0] + 0.045, palm[1] - 0.06, palm[2] + 0.03)], 0.013, SUIT, taper=(1, 0.8))
+
+# his left arm: relaxed, half hidden by the cape
+sL, eL, wL = (0.2, 0.0, 1.38), (0.29, 0.03, 1.15), (0.25, -0.05, 0.96)
+limb(sL, eL, 0.062, SUIT, r2=0.056)
+ball(eL, 0.056, SUIT)
+limb(eL, wL, 0.055, SUIT, r2=0.05)
+
+body = join("Kaito", smooth_angle=None)
 bpy.data.objects.remove(pivot)
-for p in body.data.polygons:
-    p.use_smooth = False
 
-
-# ---------- card textures (numpy, drawn in top-left pixel space) ----------
-CW, CH = 256, 358
-
-
-def blank():
-    return np.ones((CH, CW, 4), dtype=np.float32)
-
-
-yy, xx = np.mgrid[0:CH, 0:CW]
-
-
-def ink_seg(img, x0, y0, x1, y1, w=3):
-    px, py = xx - x0, yy - y0
-    dx, dy = x1 - x0, y1 - y0
-    t = np.clip((px * dx + py * dy) / (dx * dx + dy * dy), 0, 1)
-    img[np.hypot(px - t * dx, py - t * dy) <= w, :3] = 0
-
-
-def ink_disc(img, cx, cy, r):
-    img[np.hypot(xx - cx, yy - cy) <= r, :3] = 0
-
-
-def ink_ring(img, cx, cy, r, w=3):
-    img[np.abs(np.hypot(xx - cx, yy - cy) - r) <= w, :3] = 0
-
-
-def club(img, cx, cy, s):
-    for ox, oy in ((0, -s * 0.55), (-s * 0.5, s * 0.15), (s * 0.5, s * 0.15)):
-        ink_disc(img, cx + ox, cy + oy, s * 0.45)
-    for k in range(int(s)):  # stem
-        ink_seg(img, cx, cy, cx - s * 0.4 + k * 0.8, cy + s * 1.1, 1)
-
-
-def letter_a(img, x, y, h, flip=False):
-    s = -1 if flip else 1
-    ink_seg(img, x, y + s * h, x + h * 0.35, y, 3)
-    ink_seg(img, x + h * 0.35, y, x + h * 0.7, y + s * h, 3)
-    ink_seg(img, x + h * 0.15, y + s * h * 0.6, x + h * 0.55, y + s * h * 0.6, 2)
-
-
-front = blank()
-letter_a(front, 16, 18, 34)
-club(front, 33, 78, 16)
-letter_a(front, CW - 42, CH - 18, 34, flip=True)
-club(front, CW - 33, CH - 92, 16)
-# Kaito doodle: top hat + monocle + grin
-cx, cy = CW / 2, CH / 2
-for a, b in (((cx - 38, cy - 80), (cx + 38, cy - 80)), ((cx - 38, cy - 80), (cx - 38, cy - 10)),
-             ((cx + 38, cy - 80), (cx + 38, cy - 10)), ((cx - 70, cy - 8), (cx + 70, cy - 14)),
-             ((cx - 38, cy - 24), (cx + 38, cy - 24))):
-    ink_seg(front, *a, *b)
-ink_ring(front, cx - 24, cy + 14, 16)
-ink_seg(front, cx - 30, cy + 30, cx - 44, cy + 60, 2)
-ink_disc(front, cx - 44, cy + 62, 5)
-grin = (np.abs(np.hypot(xx - cx, yy - (cy - 6)) - 46) <= 3) & (yy > cy + 20)
-front[grin, :3] = 0
-for k in range(-3, 4):
-    ink_seg(front, cx + k * 11, cy + 26, cx + k * 11, cy + 38, 1)
-
-back = blank()
-u, v = (xx - 12) / 34.0, (yy - 12) / 46.0
-diamond = (np.abs(u - np.floor(u) - 0.5) + np.abs(v - np.floor(v) - 0.5)) < 0.5
-inside = (xx > 12) & (xx < CW - 12) & (yy > 12) & (yy < CH - 12)
-back[diamond & inside, :3] = (0.12, 0.3, 0.6)
-
-
-def to_image(name, arr):
-    img = bpy.data.images.new(name, CW, CH, alpha=True)
-    img.pixels.foreach_set(np.flipud(arr).ravel())
-    img.filepath_raw = os.path.join(OUT_TEX, name + ".png")
-    img.file_format = "PNG"
-    img.save()
-    img.pack()
-    return img
-
-
-# ---------- card: two back-to-back planes held in the right hand ----------
+# ------------------------------------------------------------------ the calling card (two back-to-back planes)
 card_parts = []
-for img_name, arr, flip in (("card-front", front, 0), ("card-back", back, math.pi)):
+for side, flip in (("front", 0.0), ("back", math.pi)):
     bpy.ops.mesh.primitive_plane_add(size=1, rotation=(math.radians(90), 0, flip))
     o = cur()
-    o.scale = (0.144, 0.2, 1)  # 1.6x real size so it reads on screen
-    o.location.y = -0.0006 if flip == 0 else 0.0006
-    o.data.materials.append(mat(img_name, "#ffffff", rough=0.4, image=to_image(img_name, arr)))
+    o.scale = (0.1, 0.14, 1)  # 1.6x real size so it reads beside the face
+    o.location.y = -0.0007 if flip == 0 else 0.0007
+    o.data.materials.append(mat("Card" + side.title(), "#ffffff", rough=0.4,
+                                image=os.path.join(CACHE, f"card-{side}.png")))
     card_parts.append(o)
 bpy.ops.object.select_all(action="DESELECT")
 for o in card_parts:
@@ -291,54 +182,9 @@ bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 bpy.ops.object.join()
 card = cur()
 card.name = card.data.name = "Card"
-card.location = (-0.5, -0.33, 1.84)
-card.rotation_euler = (math.radians(-10), math.radians(20), math.radians(-12))
+card.location = (-0.285, -0.255, 1.715)
+card.rotation_euler = (math.radians(-6), math.radians(14), math.radians(-18))
+bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)  # keep the origin at the card centre
 
-# ---------- export ----------
-bpy.ops.object.select_all(action="SELECT")
-bpy.ops.export_scene.gltf(
-    filepath=os.path.join(OUT_MODEL, "kaito.glb"),
-    export_format="GLB",
-    export_apply=True,
-    export_yup=True,
-    export_draco_mesh_compression_enable=True,
-)
-
-# ---------- still render (transparent WebP) ----------
-scene = bpy.context.scene
-for engine in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
-    try:
-        scene.render.engine = engine
-        break
-    except TypeError:
-        pass
-scene.render.film_transparent = True
-scene.render.resolution_x, scene.render.resolution_y = 900, 1200
-scene.view_settings.view_transform = "Standard"
-scene.render.image_settings.file_format = "WEBP"
-scene.render.image_settings.color_mode = "RGBA"
-scene.render.image_settings.quality = 85
-
-world = bpy.data.worlds.new("Night")
-world.use_nodes = True
-world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.05, 0.07, 0.16, 1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.2
-scene.world = world
-
-moon = bpy.data.lights.new("Moon", "SUN")
-moon.energy = 3.5
-moon.color = (0.85, 0.9, 1.0)
-moon_obj = bpy.data.objects.new("Moon", moon)
-moon_obj.rotation_euler = (math.radians(50), math.radians(-20), math.radians(-35))
-bpy.context.collection.objects.link(moon_obj)
-
-cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam"))
-bpy.context.collection.objects.link(cam)
-cam.location = (-1.1, -3.6, 1.15)
-cam.rotation_euler = (Vector((0.15, 0, 1.0)) - cam.location).to_track_quat("-Z", "Y").to_euler()
-cam.data.lens = 45
-scene.camera = cam
-
-scene.render.filepath = os.path.join(OUT_RENDER, "kaito.webp")
-bpy.ops.render.render(write_still=True)
-print("KAITO DONE")
+export_and_render("kaito", cam_loc=(-0.4, -1.95, 1.58), target=(-0.06, 0.0, 1.5), lens=55, res=(1000, 1250),
+                  outline=0.0045, sun_rot=(48, 0, -35), skip_outline=("Card",))
