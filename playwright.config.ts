@@ -18,7 +18,7 @@ export default defineConfig({
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    // Deterministic build: ignore any local .env token so the GitHub Section renders its empty state.
-    env: { GITHUB_TOKEN: '' },
+    // Deterministic build: no token and no network, so the GitHub Section renders its empty state.
+    env: { GITHUB_TOKEN: '', GITHUB_CONTRIBUTIONS: 'off' },
   },
 });

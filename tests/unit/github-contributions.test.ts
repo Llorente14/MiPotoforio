@@ -77,15 +77,52 @@ describe('fetchContributions', () => {
     expect(JSON.parse(seen?.init?.body as string).variables).toEqual({ login: 'Llorente14' });
   });
 
-  test('is unavailable without a token and never calls fetch', async () => {
+  test('offline never calls fetch', async () => {
     let called = false;
     const spy = (async () => {
       called = true;
       return new Response('{}');
     }) as typeof fetch;
-    const result = await fetchContributions({ username: 'u', token: undefined, fetch: spy });
-    expect(result).toEqual({ status: 'unavailable', reason: 'missing token' });
+    const result = await fetchContributions({ username: 'u', token: 't', fetch: spy, offline: true });
+    expect(result).toEqual({ status: 'unavailable', reason: 'offline' });
     expect(called).toBe(false);
+  });
+
+  // GitHub's public calendar fragment, trimmed: cells listed row by row, tooltips carry the counts.
+  const page = `
+    <td data-date="2026-01-04" id="day-0-0" data-level="0" class="ContributionCalendar-day"></td>
+    <td data-date="2026-01-11" id="day-0-1" data-level="3" class="ContributionCalendar-day"></td>
+    <td data-date="2026-01-05" id="day-1-0" data-level="1" class="ContributionCalendar-day"></td>
+    <tool-tip for="day-0-0" class="sr-only">No contributions on January 4th.</tool-tip>
+    <tool-tip for="day-0-1" class="sr-only">12 contributions on January 11th.</tool-tip>
+    <tool-tip for="day-1-0" class="sr-only">1 contribution on January 5th.</tool-tip>`;
+
+  test('without a token reads the public calendar page into Sunday-first weeks', async () => {
+    let url = '';
+    const spy = (async (input: RequestInfo | URL) => {
+      url = String(input);
+      return new Response(page);
+    }) as typeof fetch;
+    const result = await fetchContributions({ username: 'Llorente14', token: undefined, fetch: spy });
+    expect(url).toBe('https://github.com/users/Llorente14/contributions');
+    expect(result).toEqual({
+      status: 'ok',
+      total: 13,
+      weeks: [
+        {
+          days: [
+            { date: '2026-01-04', count: 0, level: 0 },
+            { date: '2026-01-05', count: 1, level: 1 },
+          ],
+        },
+        { days: [{ date: '2026-01-11', count: 12, level: 3 }] },
+      ],
+    });
+  });
+
+  test('is unavailable when the public page has no calendar', async () => {
+    const result = await fetchContributions({ username: 'u', token: undefined, fetch: respond('<html></html>') });
+    expect(result).toEqual({ status: 'unavailable', reason: 'unexpected page shape' });
   });
 
   test('is unavailable on a non-200 response', async () => {

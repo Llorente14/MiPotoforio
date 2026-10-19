@@ -107,7 +107,9 @@ The site deploys to Vercel. Every push to `main` triggers a deploy, and a daily 
 
 | Variable | Where | Purpose |
 |---|---|---|
-| `GITHUB_TOKEN` | Vercel env, local `.env` | Fine-grained read-only token for the contribution heatmap. Optional: without it the section shows an empty state. |
+| `GITHUB_TOKEN` | Vercel env, local `.env` | Fine-grained read-only token for the contribution heatmap (GraphQL API). Optional: without it the build reads the public contributions page instead, and the section only shows its empty state if GitHub cannot be reached. |
+
+Test builds set `GITHUB_CONTRIBUTIONS=off` so they never touch the network.
 
 Never commit `.env` files or tokens.
 

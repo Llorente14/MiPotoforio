@@ -8,7 +8,12 @@ if (!profile) throw new Error('Profile content entry "profile" is missing');
 const profileUrl = profile.data.socials.github;
 const username = new URL(profileUrl).pathname.split('/').filter(Boolean)[0] ?? 'Llorente14';
 
-const result = await fetchContributions({ username, token: import.meta.env.GITHUB_TOKEN });
+// GITHUB_CONTRIBUTIONS=off keeps test builds off the network.
+const result = await fetchContributions({
+  username,
+  token: import.meta.env.GITHUB_TOKEN,
+  offline: import.meta.env.GITHUB_CONTRIBUTIONS === 'off',
+});
 if (result.status === 'unavailable') console.warn(`[github] contributions unavailable: ${result.reason}`);
 
 const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' });
@@ -28,7 +33,7 @@ const label = (count: number, date: string) =>
         <div class="mt-8 overflow-x-auto border-y-2 border-ink py-5">
           <ul
             aria-label="Contribution heatmap, one cell per day"
-            class="grid w-max grid-flow-col grid-rows-7 gap-[3px]"
+            class="grid min-w-[46rem] auto-cols-fr grid-flow-col grid-rows-7 gap-[3px]"
           >
             {result.weeks.flatMap((week) =>
               week.days.map((day) => (
@@ -36,7 +41,7 @@ const label = (count: number, date: string) =>
                   title={label(day.count, day.date)}
                   aria-label={label(day.count, day.date)}
                   data-level={day.level}
-                  class="heat-cell size-3"
+                  class="heat-cell aspect-square rounded-[2px]"
                 />
               )),
             )}
