@@ -20,7 +20,6 @@ GLASS = mat("Glass", "#4a78b0", rough=0.12, metal=0.35)
 FRAME = mat("Frame", "#9aa3ad", rough=0.4, metal=0.4)
 STRIPE = mat("Stripe", "#2d4f9e", rough=0.3)
 CONCRETE = mat("Concrete", "#c7c9cc", rough=0.8)
-EMBLEM = mat("Emblem", "#3a3d42", rough=0.5)
 LETTER = mat("Letter", "#e9e6df", rough=0.4)
 WINDOW = mat("Window", "#f1eee6", rough=0.6)
 
@@ -72,11 +71,12 @@ for i in range(1, 9):  # vertical ribs on the front face, following the slope
     block(x - 0.01, x + 0.01, y0 - 0.02, y0, 0.4, top, RIB)
 block(x0 - 0.01, x0 + 0.015, y0 - 0.025, y0 + 0.02, 0.4, zl, STRIPE)  # blue edge stripe
 
-# emblem: dark hexagon with a light rim, near the top of the front face
-for r, y, m in ((0.17, y0 - 0.03, LETTER), (0.14, y0 - 0.04, EMBLEM)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=r, depth=0.02, location=(0.62, y, 2.72),
-                                        rotation=(math.radians(90), 0, math.radians(0)))
-    keep(cur(), m)
+# emblem: the UNTAR crest in black on a cream plate near the top of the front face. The plate is pre-squashed
+# because the whole building is stretched 1.35x in height at the end.
+block(0.39, 0.85, y0 - 0.03, y0 - 0.022, 2.46, 2.46 + 0.46 / 1.35, LETTER)
+bpy.ops.mesh.primitive_plane_add(size=1, location=(0.62, y0 - 0.031, 2.46 + 0.23 / 1.35), rotation=(math.radians(90), 0, 0))
+cur().scale = (0.42, 0.42 / 1.35, 1)
+keep(cur(), mat("Crest", "#ffffff", image=os.path.join(os.path.dirname(__file__), "textures", "untar-logo.png")), smooth=False)
 
 # ---------- glass bay with horizontal fins, in front of the slab's left side ----------
 block(-0.32, 0.12, -0.5, 0.25, 0.36, 2.62, GLASS)
@@ -116,4 +116,5 @@ for x in (-1.2, 0.55, 0.95):  # planters with small trees along the front
 
 join("Untar", smooth_angle=30).scale.z = 1.35  # the real tower is slender
 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-export_and_render("untar", cam_loc=(-2.8, -5.6, 1.1), target=(-0.1, 0, 2.05), lens=42, res=(900, 1200), outline=0.016)
+export_and_render("untar", cam_loc=(-2.8, -5.6, 1.1), target=(-0.1, 0, 2.05), lens=42, res=(900, 1200), outline=0.016,
+                  sun_energy=1.7)  # dimmer than the figures: the pale cladding and glass blow out otherwise

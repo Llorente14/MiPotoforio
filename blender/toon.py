@@ -292,7 +292,7 @@ def _outline(obj, thickness, ink):
 
 
 def export_and_render(name, cam_loc, target, lens=50, res=(1000, 1250), outline=0.006,
-                      sun_rot=(48, 0, -35), skip_outline=()):
+                      sun_rot=(48, 0, -35), skip_outline=(), sun_energy=2.7):
     """Write public/models/<name>.glb (Draco) and a cel-shaded transparent public/renders/<name>.webp."""
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT_MODEL, name + ".glb"), export_format="GLB",
@@ -330,7 +330,7 @@ def export_and_render(name, cam_loc, target, lens=50, res=(1000, 1250), outline=
     bg.inputs["Strength"].default_value = 0.18
     scene.world = world
     sun = bpy.data.objects.new("Sun", bpy.data.lights.new("Sun", "SUN"))
-    sun.data.energy = 2.7
+    sun.data.energy = sun_energy
     sun.data.use_shadow = False  # shading by normal only: clean anime terminators, no shadow-map jaggies
     sun.rotation_euler = tuple(math.radians(a) for a in sun_rot)
     bpy.context.collection.objects.link(sun)
