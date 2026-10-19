@@ -2,23 +2,23 @@
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
 import SectionHead from './SectionHead.astro';
+import SocialIcon from './SocialIcon.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
 const { name, university, major, semester, socials } = entry.data;
 
 const links = [
-  { label: 'GitHub', aria: 'GitHub profile', href: socials.github, note: new URL(socials.github).pathname.slice(1) },
-  { label: 'LinkedIn', aria: 'LinkedIn profile', href: socials.linkedin, note: 'in/axelchrisdy' },
-  { label: 'Email', aria: 'Email Axel', href: `mailto:${socials.email}`, note: socials.email },
-];
+  { icon: 'github', label: 'GitHub', aria: 'GitHub profile', href: socials.github, note: new URL(socials.github).pathname.slice(1) },
+  { icon: 'linkedin', label: 'LinkedIn', aria: 'LinkedIn profile', href: socials.linkedin, note: 'in/axelchrisdy' },
+  { icon: 'email', label: 'Email', aria: 'Email Axel', href: `mailto:${socials.email}`, note: socials.email },
+] as const;
 ---
 
-<!-- The page the Hero card opens into: a card face with a double frame and corner indices. -->
+<!-- The page the Hero card opens into: a calling card with a double frame and Kid's mark in the corner. -->
 <section id="about" aria-labelledby="about-heading" class="relative px-3 pt-3 md:px-5 md:pt-5">
   <div class="card-face relative mx-auto max-w-[90rem] bg-paper px-5 py-16 md:px-14 md:py-24">
-    <span class="card-face__index" aria-hidden="true">A<br />♣</span>
-    <span class="card-face__index card-face__index--end" aria-hidden="true">A<br />♣</span>
+    <svg class="card-face__mark" viewBox="-260 -400 520 680" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M-128 -150 L-118 -372 Q0 -392 118 -372 L128 -150" stroke-width="22" /><path d="M-127 -196 Q0 -176 127 -196 L128 -150 Q0 -130 -128 -150 Z" fill="currentColor" stroke-width="12" /><path d="M-250 -140 Q0 -100 250 -140" stroke-width="22" /><path d="M-150 -18 Q-108 -52 -62 -20" stroke-width="22" /><circle cx="104" cy="-12" r="74" stroke-width="22" /><path d="M-196 82 Q-20 126 196 70 Q140 252 -10 258 Q-150 252 -196 82 Z" stroke-width="22" /></svg>
 
     <div class="grid items-end gap-12 md:grid-cols-12">
       <div class="md:col-span-7">
@@ -27,7 +27,7 @@ const links = [
         <dl class="mt-12 max-w-xl border-t border-rule">
           <div class="record-row"><dt class="label">Name</dt><dd>{name}</dd></div>
           <div class="record-row"><dt class="label">University</dt><dd>{university}</dd></div>
-          <div class="record-row"><dt class="label">Programme</dt><dd>{major}, semester {semester}</dd></div>
+          <div class="record-row"><dt class="label">Programme</dt><dd>{major}, <mark class="hl">semester {semester}</mark></dd></div>
         </dl>
 
         <ul class="mt-10 grid max-w-xl gap-px sm:grid-cols-3">
@@ -36,7 +36,7 @@ const links = [
               <li>
                 <a class="social group" href={l.href} aria-label={l.aria}>
                   <span class="label flex items-center justify-between">
-                    {l.label}
+                    <span class="flex items-center gap-2"><SocialIcon name={l.icon} class="size-4" />{l.label}</span>
                     <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
                   </span>
                   <span class="mt-1 block truncate text-sm opacity-80">{l.note}</span>
@@ -66,23 +66,12 @@ const links = [
       inset 0 0 0 9px var(--color-paper),
       inset 0 0 0 10px var(--color-ink);
   }
-  .card-face__index {
+  /* Kid's doodle stamped in the corner: this page is the calling card the Hero threw. */
+  .card-face__mark {
     position: absolute;
-    top: 1.5rem;
-    left: 1.6rem;
-    font-family: var(--font-display);
-    font-stretch: 62%;
-    font-weight: 800;
-    font-size: 2rem;
-    line-height: 0.95;
-    text-align: center;
-  }
-  .card-face__index--end {
-    top: auto;
-    left: auto;
-    right: 1.6rem;
-    bottom: 1.5rem;
-    transform: rotate(180deg);
+    top: 1.6rem;
+    left: 1.7rem;
+    width: 2.6rem;
   }
   .record-row {
     display: grid;
@@ -95,6 +84,13 @@ const links = [
   }
   .record-row dt {
     opacity: 0.8;
+  }
+  /* Highlighter stroke in shu, slightly skewed like a hand-drawn mark. */
+  .hl {
+    background: linear-gradient(transparent 45%, color-mix(in srgb, var(--color-torii) 38%, transparent) 45%, color-mix(in srgb, var(--color-torii) 38%, transparent) 92%, transparent 92%);
+    color: inherit;
+    font-weight: 700;
+    padding: 0 0.15em;
   }
   .social {
     display: block;
