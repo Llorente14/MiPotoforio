@@ -48,4 +48,17 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { profile, projects };
+const certificates = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/certificates' }),
+  schema: z.object({
+    title: z.string().min(1),
+    issuer: z.string().min(1),
+    date: z.coerce.date(),
+    image: z.string().startsWith('/'),
+    imageAlt: z.string().min(1),
+    verifyUrl: z.url().optional(),
+    featuredOrder: z.number().int().positive(),
+  }),
+});
+
+export const collections = { profile, projects, certificates };
