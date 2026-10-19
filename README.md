@@ -101,6 +101,15 @@ The site deploys to Vercel. Every push to `main` triggers a deploy, and a daily 
 
 Never commit `.env` files or tokens.
 
+### Deploy & secrets
+
+1. Import this repo in Vercel (New Project). The Astro preset works as is.
+2. In GitHub, create a fine-grained personal access token with read-only access (public repositories only is enough). Add it in Vercel under Settings > Environment Variables as `GITHUB_TOKEN`. For local development, copy `.env.example` to `.env` and fill it in.
+3. In Vercel, open Settings > Git > Deploy Hooks and create a hook for the `main` branch. Copy its URL.
+4. In GitHub, open the repo Settings > Secrets and variables > Actions and save the URL as the repository secret `VERCEL_DEPLOY_HOOK_URL`.
+
+The workflow `.github/workflows/daily-deploy.yml` then calls the hook once a day (03:00 UTC) and can also be run by hand from the Actions tab. Without the secret it only logs a skip message.
+
 ## Credits
 
 - Detective Conan, Kaito Kid and Akai Shuichi are © Gosho Aoyama / Shogakukan / TMS Entertainment. The models here are non-commercial, low-poly fan art.
