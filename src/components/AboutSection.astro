@@ -2,55 +2,67 @@
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
 import SectionHead from './SectionHead.astro';
-import SocialIcon from './SocialIcon.astro';
+import StripedDisc from './StripedDisc.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
-const { name, university, major, semester, socials } = entry.data;
-
-const links = [
-  { icon: 'github', label: 'GitHub', aria: 'GitHub profile', href: socials.github, note: new URL(socials.github).pathname.slice(1) },
-  { icon: 'linkedin', label: 'LinkedIn', aria: 'LinkedIn profile', href: socials.linkedin, note: 'in/axelchrisdy' },
-  { icon: 'email', label: 'Email', aria: 'Email Axel', href: `mailto:${socials.email}`, note: socials.email },
-] as const;
+const { name, university, major, semester, totalSemesters } = entry.data;
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <!-- The page the Hero card opens into: a calling card with a double frame and Kid's mark in the corner. -->
 <section id="about" aria-labelledby="about-heading" class="relative px-3 pt-3 md:px-5 md:pt-5">
-  <div class="card-face relative mx-auto max-w-[90rem] bg-paper px-5 py-16 md:px-14 md:py-24">
+  <div class="card-face relative mx-auto max-w-[90rem] bg-paper px-5 pb-12 pt-20 md:px-12 md:py-14">
     <svg class="card-face__mark" viewBox="-260 -400 520 680" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M-128 -150 L-118 -372 Q0 -392 118 -372 L128 -150" stroke-width="22" /><path d="M-127 -196 Q0 -176 127 -196 L128 -150 Q0 -130 -128 -150 Z" fill="currentColor" stroke-width="12" /><path d="M-250 -140 Q0 -100 250 -140" stroke-width="22" /><path d="M-150 -18 Q-108 -52 -62 -20" stroke-width="22" /><circle cx="104" cy="-12" r="74" stroke-width="22" /><path d="M-196 82 Q-20 126 196 70 Q140 252 -10 258 Q-150 252 -196 82 Z" stroke-width="22" /></svg>
 
-    <div class="grid items-end gap-12 md:grid-cols-12">
-      <div class="md:col-span-7">
+    <div class="grid items-center gap-10 md:grid-cols-12 md:gap-8">
+      <div class="md:col-span-6 md:pl-6">
         <SectionHead number="02" kanji="私" label="Who" id="about-heading" title="About me" />
 
-        <dl class="mt-12 max-w-xl border-t border-rule">
+        <dl class="mt-10 border-t border-rule">
           <div class="record-row"><dt class="label">Name</dt><dd>{name}</dd></div>
           <div class="record-row"><dt class="label">University</dt><dd>{university}</dd></div>
-          <div class="record-row"><dt class="label">Programme</dt><dd>{major}, <mark class="hl">semester {semester}</mark></dd></div>
+          <div class="record-row">
+            <dt class="label">Programme</dt>
+            <dd>{major}, <span class="semester-pill">semester {semester}</span></dd>
+          </div>
         </dl>
 
-        <ul class="mt-10 grid max-w-xl gap-px sm:grid-cols-3">
-          {
-            links.map((l) => (
-              <li>
-                <a class="social group" href={l.href} aria-label={l.aria}>
-                  <span class="label flex items-center justify-between">
-                    <span class="flex items-center gap-2"><SocialIcon name={l.icon} class="size-4" />{l.label}</span>
-                    <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
-                  </span>
-                  <span class="mt-1 block truncate text-sm opacity-80">{l.note}</span>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
+        <!-- How far along the degree is: one tick per semester, the current one stamped in shu. -->
+        <div class="semester mt-10">
+          <p class="semester__count display" aria-hidden="true">
+            {pad(semester)}<span class="semester__of">/{pad(totalSemesters)}</span>
+          </p>
+          <div class="flex-1">
+            <p class="label">Semester <span class="font-jp tracking-normal opacity-75" lang="ja">学期</span></p>
+            <ol class="semester__ticks mt-3" aria-label={`Semester ${semester} of ${totalSemesters}`}>
+              {
+                Array.from({ length: totalSemesters }, (_, i) => (
+                  <li
+                    class:list={['semester__tick', i < semester - 1 && 'is-done', i === semester - 1 && 'is-now']}
+                    aria-current={i === semester - 1 ? 'step' : undefined}
+                  >
+                    <span class="sr-only">Semester {i + 1}</span>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+        </div>
       </div>
 
-      <figure class="relative md:col-span-5">
-        <p class="tategaki absolute -left-2 top-0 text-2xl opacity-75 md:-left-10" aria-hidden="true">大学二号館</p>
-        <ModelSlot client:visible id="untar" aspect="3 / 4" alt="Cel-shaded 3D model of UNTAR Building 2" />
-        <figcaption class="label mt-3 flex justify-between opacity-80">
+      <figure class="relative md:col-span-6">
+        <!-- An arched window of evening sky behind the building, fading out at the sides into the card. -->
+        <div class="stage">
+          <div class="stage__sky" aria-hidden="true">
+            <StripedDisc class="stage__sun" bands={9} />
+          </div>
+          <p class="tategaki stage__kanji" aria-hidden="true">大学二号館</p>
+          <div class="relative mx-auto w-[86%]">
+            <ModelSlot client:visible id="untar" aspect="4 / 5" alt="Cel-shaded 3D model of UNTAR Building 2" />
+          </div>
+        </div>
+        <figcaption class="label mt-4 flex justify-between px-2 opacity-80">
           <span>Campus I · Building 2</span><span>Jakarta Barat</span>
         </figcaption>
       </figure>
@@ -75,31 +87,109 @@ const links = [
   }
   .record-row {
     display: grid;
-    grid-template-columns: 8rem 1fr;
+    grid-template-columns: 6.5rem 1fr;
     align-items: baseline;
     gap: 1rem;
     padding: 0.9rem 0;
     border-bottom: 1px solid var(--color-rule);
     font-size: 1.125rem;
   }
+  @media (min-width: 768px) {
+    .record-row {
+      grid-template-columns: 8rem 1fr;
+    }
+  }
   .record-row dt {
     opacity: 0.8;
   }
-  /* Highlighter stroke in shu, slightly skewed like a hand-drawn mark. */
-  .hl {
-    background: linear-gradient(transparent 45%, color-mix(in srgb, var(--color-torii) 38%, transparent) 45%, color-mix(in srgb, var(--color-torii) 38%, transparent) 92%, transparent 92%);
-    color: inherit;
-    font-weight: 700;
-    padding: 0 0.15em;
-  }
-  .social {
-    display: block;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--color-ink);
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  .social:hover {
-    background: var(--color-ink);
+  /* The current semester as a small shu stamp, set in the label voice so it stays tidy in the row. */
+  .semester-pill {
+    display: inline-block;
+    padding: 0.15em 0.65em 0.2em;
+    border-radius: 999px;
+    background: var(--color-torii);
     color: var(--color-paper);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: 0.1em;
+  }
+
+  .semester {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.1rem 1.4rem;
+    border: 1px solid var(--color-ink);
+    border-radius: 0.6rem;
+  }
+  .semester__count {
+    font-size: clamp(3.5rem, 6vw, 5rem);
+    color: var(--color-torii);
+  }
+  .semester__of {
+    font-size: 0.4em;
+    color: var(--color-ink);
+    opacity: 0.7;
+  }
+  .semester__ticks {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.35rem;
+  }
+  .semester__tick {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--color-rule);
+  }
+  .semester__tick.is-done {
+    background: var(--color-ink);
+  }
+  .semester__tick.is-now {
+    background: var(--color-torii);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-torii) 25%, transparent);
+  }
+
+  .stage {
+    position: relative;
+    padding-top: 2.5rem;
+  }
+  /* Arch-topped panel: indigo dusk at the top warming to washi at the base, fading out left and right. */
+  .stage__sky {
+    position: absolute;
+    inset: 0 4% 3rem;
+    border-radius: 999px 999px 1rem 1rem;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--color-kincha) 45%, transparent), transparent 70%),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-ai) 88%, transparent), color-mix(in srgb, var(--color-ai) 30%, var(--color-paper)));
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  }
+  /* On the Night card the window is moonlight instead: a lighter wash so the arch still reads. */
+  :global([data-sky='night']) .stage__sky {
+    background:
+      radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--color-kincha) 40%, transparent), transparent 70%),
+      linear-gradient(to bottom, #2b3a5c, color-mix(in srgb, #2b3a5c 40%, var(--color-paper)));
+  }
+  .stage :global(.stage__sun) {
+    position: absolute;
+    top: 12%;
+    right: 14%;
+    width: 30%;
+    color: #ece4d0;
+    opacity: 0.85;
+  }
+  .stage__kanji {
+    position: absolute;
+    top: 4.5rem;
+    left: 15%;
+    z-index: 1;
+    font-size: 1.5rem;
+    letter-spacing: 0.3em;
+    color: #ece4d0;
+    opacity: 0.9;
   }
 </style>

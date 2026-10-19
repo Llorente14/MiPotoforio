@@ -133,9 +133,13 @@ function Lean({ children, reducedMotion, amount }: { children: ReactNode; reduce
   return <group ref={ref}>{children}</group>;
 }
 
-const framing: Record<ModelId, { camera: [number, number, number]; fov: number; margin: number; sway: number; ground: boolean }> = {
+// light scales both lamps: the pale building needs less than the figures.
+const framing: Record<
+  ModelId,
+  { camera: [number, number, number]; fov: number; margin: number; sway: number; ground: boolean; light?: number }
+> = {
   kaito: { camera: [-0.45, 0.62, 2.6], fov: 30, margin: 1.02, sway: 0.12, ground: false },
-  untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
+  untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.12, sway: 0.35, ground: true, light: 0.7 },
   temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
   akai: { camera: [2.6, 1.4, 3.4], fov: 34, margin: 1.08, sway: 0.2, ground: true },
 };
@@ -151,8 +155,8 @@ export default function ModelScene({ id, reducedMotion }: { id: ModelId; reduced
       // Wheel and touch scrolling must always reach the page.
       style={{ touchAction: 'pan-y' }}
     >
-      <ambientLight intensity={0.75} />
-      <directionalLight position={[-3, 5, 4]} intensity={1.6} />
+      <ambientLight intensity={0.75 * (f.light ?? 1)} />
+      <directionalLight position={[-3, 5, 4]} intensity={1.6 * (f.light ?? 1)} />
       <Wake enabled={!reducedMotion} />
       <Suspense fallback={null}>
         <Bounds fit clip margin={f.margin} maxDuration={reducedMotion ? 0 : 0.6}>

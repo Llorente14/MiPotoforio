@@ -12,19 +12,20 @@ test('about section shows profile facts', async ({ page }) => {
   await expect(about.getByText('Axel Chrisdy Sanjaya', { exact: true })).toBeVisible();
   await expect(page.getByText('Universitas Tarumanagara')).toBeVisible();
   await expect(page.getByText('Informatics Engineering, semester 5')).toBeVisible();
+  await expect(about.getByRole('list', { name: 'Semester 5 of 8' }).getByRole('listitem')).toHaveCount(8);
 });
 
-test('social links have correct hrefs and accessible names', async ({ page }) => {
+test('hero contact links have correct hrefs and accessible names', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'GitHub profile' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Axel on GitHub' })).toHaveAttribute(
     'href',
     'https://github.com/Llorente14',
   );
-  await expect(page.getByRole('link', { name: 'LinkedIn profile' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Axel on LinkedIn' })).toHaveAttribute(
     'href',
     'https://www.linkedin.com/in/axelchrisdy',
   );
-  await expect(page.getByRole('link', { name: 'Email Axel' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Write to Axel' })).toHaveAttribute(
     'href',
     'mailto:axel.chrisdy@gmail.com',
   );

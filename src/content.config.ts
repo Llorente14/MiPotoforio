@@ -9,6 +9,7 @@ const profile = defineCollection({
     university: z.string().min(1),
     major: z.string().min(1),
     semester: z.number().int().positive(),
+    totalSemesters: z.number().int().positive(),
     tagline: z.string().min(1),
     // Campus coordinates shown as print metadata in the Hero, e.g. 6°10′S 106°47′E.
     coordinates: z.string().min(1),
