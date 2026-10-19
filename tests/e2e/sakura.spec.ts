@@ -34,9 +34,12 @@ test('reduced motion runs no animation loop', async ({ page }) => {
   await page.addInitScript(countRaf);
   await page.goto('/');
   await expect(page.locator('canvas[data-sakura]')).toHaveCount(1);
+  // Let one-off frames from mounting settle (the Hero 3D scene renders on demand), then expect silence.
+  await page.waitForTimeout(2500);
+  const before = await page.evaluate(() => (window as any).__raf as number);
   await page.waitForTimeout(1000);
-  const count = await page.evaluate(() => (window as any).__raf as number);
-  expect(count).toBe(0);
+  const after = await page.evaluate(() => (window as any).__raf as number);
+  expect(after - before).toBe(0);
 });
 
 test('particles cause no long main-thread tasks while idle', async ({ page }) => {

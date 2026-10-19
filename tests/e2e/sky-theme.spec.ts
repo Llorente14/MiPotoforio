@@ -36,7 +36,7 @@ test('choice survives reload', async ({ page }) => {
 
 test('hero stays night under every theme', async ({ page }) => {
   await page.goto('/');
-  const heroBg = () => page.locator('#hero').evaluate((el) => getComputedStyle(el).backgroundColor);
+  const heroBg = () => page.locator('#hero [data-hero-sky]').evaluate((el) => getComputedStyle(el).backgroundColor);
   const night = await heroBg();
   for (const name of ['Dusk', 'Night', 'Day']) {
     await page.getByRole('button', { name }).click();

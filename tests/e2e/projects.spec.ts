@@ -28,7 +28,7 @@ test('list page shows all 4 projects and opens a detail page', async ({ page }) 
 test('project images have alt text', async ({ page }) => {
   for (const url of ['/', '/projects/', '/projects/dapute/']) {
     await page.goto(url);
-    const imgs = page.locator('main img');
+    const imgs = page.locator('main img:not([aria-hidden="true"])');
     const n = await imgs.count();
     for (let i = 0; i < n; i++) {
       await expect(imgs.nth(i)).toHaveAttribute('alt', /\S/);
