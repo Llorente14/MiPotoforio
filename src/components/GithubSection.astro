@@ -1,0 +1,61 @@
+---
+import { fetchContributions } from '../lib/github-contributions';
+import { getEntry } from 'astro:content';
+
+const profile = await getEntry('profile', 'profile');
+if (!profile) throw new Error('Profile content entry "profile" is missing');
+const profileUrl = profile.data.socials.github;
+const username = new URL(profileUrl).pathname.split('/').filter(Boolean)[0] ?? 'Llorente14';
+
+const result = await fetchContributions({ username, token: import.meta.env.GITHUB_TOKEN });
+if (result.status === 'unavailable') console.warn(`[github] contributions unavailable: ${result.reason}`);
+
+const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' });
+const label = (count: number, date: string) =>
+  `${count} ${count === 1 ? 'contribution' : 'contributions'} on ${dateFmt.format(new Date(date))}`;
+---
+
+<section id="github" aria-labelledby="github-heading" class="mx-auto max-w-5xl px-4 py-16">
+  <h2 id="github-heading" class="font-display text-3xl">GitHub Activity</h2>
+  {
+    result.status === 'ok' ? (
+      <>
+        <p class="mt-4" data-github-summary>
+          {result.total} contributions in the last year
+        </p>
+        <div class="mt-4 overflow-x-auto rounded-lg bg-paper/80 p-4 backdrop-blur">
+          <ul
+            aria-label="Contribution heatmap, one cell per day"
+            class="grid w-max grid-flow-col grid-rows-7 gap-[3px]"
+          >
+            {result.weeks.flatMap((week) =>
+              week.days.map((day) => (
+                <li
+                  title={label(day.count, day.date)}
+                  aria-label={label(day.count, day.date)}
+                  data-level={day.level}
+                  class="heat-cell size-3 rounded-sm"
+                />
+              )),
+            )}
+          </ul>
+        </div>
+      </>
+    ) : (
+      <p class="mt-4" data-github-empty>
+        Contribution activity is not available right now. See the live graph on GitHub instead.
+      </p>
+    )
+  }
+  <p class="mt-6"><a class="underline" href={profileUrl}>View {username} on GitHub</a></p>
+</section>
+
+<style>
+  .heat-cell {
+    background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+  .heat-cell[data-level="1"] { background: color-mix(in srgb, var(--color-torii) 30%, transparent); }
+  .heat-cell[data-level="2"] { background: color-mix(in srgb, var(--color-torii) 55%, transparent); }
+  .heat-cell[data-level="3"] { background: color-mix(in srgb, var(--color-torii) 80%, transparent); }
+  .heat-cell[data-level="4"] { background: var(--color-torii); }
+</style>
