@@ -80,10 +80,12 @@ function Model({ id }: { id: ModelId }) {
     if (id !== 'kaito') return;
     const card = model.getObjectByName('Card');
     if (!card) return;
+    // Remember where the fingers hold it; the flick is an offset from there.
+    card.userData.rest ??= { x: card.position.x, ry: card.rotation.y };
     const p = Math.min(cardProgress.value / 0.06, 1);
     card.visible = p < 1;
-    card.rotation.y = p * Math.PI * 0.6;
-    card.position.x = -0.285 - p * 0.12;
+    card.rotation.y = card.userData.rest.ry + p * Math.PI * 0.6;
+    card.position.x = card.userData.rest.x - p * 0.1;
   });
   return <primitive object={model} />;
 }
@@ -130,7 +132,7 @@ function Lean({ children, reducedMotion, amount }: { children: ReactNode; reduce
 }
 
 const framing: Record<ModelId, { camera: [number, number, number]; fov: number; margin: number; sway: number; ground: boolean }> = {
-  kaito: { camera: [-0.5, 1.55, 2.4], fov: 32, margin: 1.02, sway: 0.12, ground: false },
+  kaito: { camera: [-0.45, 0.62, 2.6], fov: 30, margin: 1.02, sway: 0.12, ground: false },
   untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
   temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
   akai: { camera: [2.6, 1.4, 3.4], fov: 34, margin: 1.08, sway: 0.2, ground: true },

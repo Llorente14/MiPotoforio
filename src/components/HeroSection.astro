@@ -228,12 +228,12 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Where Kaito's fingers hold the card, in Hero coordinates (the figure's hand sits ~30% in, 31% down).
+    // Where Kaito's fingers hold the card, in Hero coordinates (the figure's hand sits ~25% in, 38% down).
     const hand = () => {
       const h = hero.getBoundingClientRect();
       const k = kaito.getBoundingClientRect();
       const w = Math.max(k.width * 0.13, 64);
-      return { left: k.left - h.left + k.width * 0.3 - w / 2, top: k.top - h.top + k.height * 0.31 - w * 0.7, width: w, height: w * 1.4 };
+      return { left: k.left - h.left + k.width * 0.25 - w / 2, top: k.top - h.top + k.height * 0.38 - w * 0.7, width: w, height: w * 1.4 };
     };
     const vw = () => hero.clientWidth;
     const vh = () => hero.clientHeight;
