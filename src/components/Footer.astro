@@ -1,6 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
-import StripedDisc from './StripedDisc.astro';
+import SocialIcon from './SocialIcon.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -19,12 +19,27 @@ const back = row(110, 200, 40, 50, 23);
 const front = row(170, 200, 22, 44, 37);
 ---
 
-<footer class="relative mt-16 overflow-hidden pt-44">
+<footer class="relative mt-16 overflow-hidden pt-72">
   <!-- Stable hook for the sakura particles to land on the meadow's top edge. -->
-  <div id="meadow-top" data-meadow-top aria-hidden="true" class="absolute inset-x-0 top-[8.5rem] h-0"></div>
+  <div id="meadow-top" data-meadow-top aria-hidden="true" class="absolute inset-x-0 top-[12.5rem] h-0"></div>
 
-  <StripedDisc class="footer__sun" bands={9} />
-  <svg aria-hidden="true" viewBox="0 0 1200 200" preserveAspectRatio="none" class="pointer-events-none absolute inset-x-0 top-6 h-40 w-full">
+  <!-- A sakura tree in ink on the meadow: its petals are the ones drifting down the page. -->
+  <svg aria-hidden="true" viewBox="0 0 420 300" class="footer__tree">
+    <g fill="#17140f">
+      <path d="M196 300 C200 250 192 214 172 180 C150 146 112 128 70 120 L74 110 C116 116 150 130 176 158 C178 128 168 100 146 74 L156 68 C182 98 192 130 188 166 C200 140 226 116 262 104 L266 114 C232 128 210 150 200 182 C214 214 218 256 214 300 Z" />
+      <path d="M262 104 C292 92 322 92 350 100 L348 108 C322 102 294 104 268 114 Z M146 74 C138 58 124 44 104 34 L110 26 C132 38 148 54 156 68 Z" />
+    </g>
+    <g fill="var(--color-sakura)">
+      <circle cx="70" cy="108" r="38" /><circle cx="110" cy="86" r="34" /><circle cx="104" cy="34" r="30" />
+      <circle cx="146" cy="56" r="40" /><circle cx="196" cy="72" r="44" /><circle cx="244" cy="62" r="40" />
+      <circle cx="268" cy="104" r="40" /><circle cx="318" cy="88" r="36" /><circle cx="352" cy="104" r="30" />
+      <circle cx="160" cy="120" r="30" /><circle cx="222" cy="118" r="28" />
+    </g>
+    <g fill="color-mix(in srgb, var(--color-sakura) 60%, #fff)">
+      <circle cx="120" cy="70" r="16" /><circle cx="200" cy="52" r="18" /><circle cx="262" cy="84" r="14" /><circle cx="84" cy="96" r="12" />
+    </g>
+  </svg>
+  <svg aria-hidden="true" viewBox="0 0 1200 200" preserveAspectRatio="none" class="pointer-events-none absolute inset-x-0 top-[8rem] h-40 w-full">
     <g data-parallax="0.25" fill="#17140f" opacity="0.45"><path d={back} /></g>
     <g data-parallax="0.5" fill="#0d0b08"><path d={front} /><rect y="196" width="1200" height="4" /></g>
   </svg>
@@ -35,9 +50,9 @@ const front = row(170, 200, 22, 44, 37);
       <div class="flex flex-col justify-end gap-6 md:col-span-5">
         <p class="label opacity-75">Until the next card</p>
         <ul class="flex flex-wrap gap-x-8 gap-y-3">
-          <li><a class="label label-link" href={socials.github}>GitHub</a></li>
-          <li><a class="label label-link" href={socials.linkedin}>LinkedIn</a></li>
-          <li><a class="label label-link" href={`mailto:${socials.email}`}>Email</a></li>
+          <li><a class="label label-link inline-flex items-center gap-2" href={socials.github}><SocialIcon name="github" class="size-4" />GitHub</a></li>
+          <li><a class="label label-link inline-flex items-center gap-2" href={socials.linkedin}><SocialIcon name="linkedin" class="size-4" />LinkedIn</a></li>
+          <li><a class="label label-link inline-flex items-center gap-2" href={`mailto:${socials.email}`}><SocialIcon name="email" class="size-4" />Email</a></li>
         </ul>
       </div>
     </div>
@@ -49,14 +64,13 @@ const front = row(170, 200, 22, 44, 37);
 </footer>
 
 <style>
-  footer :global(.footer__sun) {
+  .footer__tree {
     position: absolute;
-    left: 50%;
-    top: 0.5rem;
-    width: 11rem;
-    translate: -50% 0;
-    color: var(--sky-body);
-    opacity: 0.85;
+    right: max(4vw, 1rem);
+    /* trunk planted in the grass, just above the ink band */
+    top: calc(18.4rem - min(26rem, 60vw) * 0.714);
+    width: min(26rem, 60vw);
+    pointer-events: none;
   }
   footer .label-link {
     text-decoration-color: rgb(236 228 208 / 0.35);
