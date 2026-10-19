@@ -1,6 +1,5 @@
-// Rasterise the vector sources the Blender scripts texture with:
-//   src/assets/card/{front,back}.svg  -> blender/.cache/card-*.png   (Kaito's calling card)
-//   blender/decals/*.svg              -> blender/.cache/<name>.png   (painted faces)
+// Rasterise the vector face decals the Blender scripts paint onto the heads:
+//   blender/decals/*.svg -> blender/.cache/<name>.png
 // Run before the Blender scripts:  node scripts/textures.mjs   (blender/.cache is gitignored)
 import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, resolve } from 'node:path';
@@ -13,8 +12,6 @@ await mkdir(out, { recursive: true });
 
 const decalDir = resolve(root, 'blender/decals');
 const jobs = [
-  { src: resolve(root, 'src/assets/card/front.svg'), name: 'card-front', width: 640 },
-  { src: resolve(root, 'src/assets/card/back.svg'), name: 'card-back', width: 640 },
   ...(await readdir(decalDir))
     .filter((f) => f.endsWith('.svg'))
     .map((f) => ({ src: resolve(decalDir, f), name: basename(f, '.svg'), width: 1024 })),

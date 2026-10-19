@@ -1,13 +1,14 @@
 """Cel-shaded Kaito Kid (fan art), head to mid-thigh, holding his calling card between two fingers.
 
-Run from the repo root (the card and face textures come from vector sources first):
+Run from the repo root (the face decal is rasterised from its vector source first):
     node scripts/textures.mjs
     blender -b --factory-startup -P blender/kaito.py
 
+The card faces are blender/textures/card-{front,back}.png, cropped from Axel's reference photo.
+
 Outputs public/models/kaito.glb (nodes "Kaito" and "Card"; animate the card) and public/renders/kaito.webp.
 Faces -Y, z up. Built in working units, then normalised to 1.0 tall with the origin at the centre of
-the thigh cut. The right arm and glove are skinned to an armature and posed through its bones; the
-pose is baked into the mesh before export. Hair is clamped inside a 1.12x head ellipsoid.
+the thigh cut. Hair flows round the skull and is clamped inside a 1.55x head ellipsoid.
 """
 import math
 import os
@@ -16,8 +17,9 @@ import sys
 sys.path.append(os.path.dirname(__file__))
 import bpy  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
-from toon import (CACHE, ball, cur, decal, export_and_render, join, keep, limb, loft, mat, parts, poly,  # noqa: E402
-                  strand)
+from toon import CACHE, ball, cur, decal, export_and_render, join, keep, limb, loft, mat, parts, poly, strand  # noqa: E402
+
+TEXTURES = os.path.join(os.path.dirname(__file__), "textures")
 
 SUIT = mat("Suit", "#f4f2ec", rough=0.5)
 SUIT_SHADE = mat("SuitSeam", "#dcdad3")
@@ -25,7 +27,7 @@ LINING = mat("Lining", "#e3e7f0")
 SHIRT = mat("Shirt", "#2f56a8")
 TIE = mat("Tie", "#c8323a")
 BAND = mat("HatBand", "#2f56a8")
-SKIN = mat("Skin", "#f6dcc6")
+SKIN = mat("Skin", "#e2b28b")  # light sawo matang tan
 HAIR = mat("Hair", "#3a2c26")
 GLOVE = mat("Glove", "#fbfbf8", rough=0.6)
 SILVER = mat("Silver", "#cfd4dc", rough=0.25, metal=1.0)
@@ -35,7 +37,7 @@ FRONT_Y = -0.118  # jacket front surface at chest height
 Z_CUT = 0.71  # mid-thigh: 45% of the way from hip (0.9) to knee (0.48)
 HEAD_C = Vector((0.0, -0.012, 1.66))  # head ellipsoid before the anime scale-up
 HEAD_R = Vector((0.105, 0.1, 0.125))
-HAIR_BOUND = 1.12
+HAIR_BOUND = 1.55  # room for the locks to flow and kick out, still no strand sticking straight out
 
 
 def thick(obj, t):
@@ -136,7 +138,7 @@ for sx in (-1, 1):
     ball((0.103 * sx, -0.004, 1.632), 0.021, SKIN, scale=(0.45, 1.0, 1.35))  # ears
 
 
-# ---- hair: clumps that follow the skull, clamped inside the 1.12x head ellipsoid
+# ---- hair: flowing clumps that follow the skull, clamped inside the head volume
 def on_head(phi, theta, k):
     """Point on the head ellipsoid scaled by k. phi: 0 = front (-Y), +90 = his left; theta from the crown."""
     p, t = math.radians(phi), math.radians(theta)
@@ -146,21 +148,32 @@ def on_head(phi, theta, k):
 
 
 hair_start = len(parts)
-ball((0.0, 0.006, 1.712), 0.104, HAIR, scale=(1.04, 1.07, 0.66), segs=32)  # mass under the hat
-for i, phi in enumerate(range(48, 316, 22)):  # sides and back: flowing down, tips flicking only slightly
-    tip_theta = 106 + 20 * (1 - abs(math.cos(math.radians(phi))))
-    drift = (6, -5, 4, -6, 5)[i % 5]
-    pts = [on_head(phi, 54, 1.02), on_head(phi + drift * 0.4, 75, 1.07), on_head(phi + drift * 0.8, 96, 1.085),
-           on_head(phi + drift, tip_theta, 1.06)]
-    strand(pts, 0.026, HAIR, taper=(1.0, 0.0))
-for phi, tip in ((-40, 80), (-26, 83), (-12, 79), (2, 82.5), (16, 79.5), (30, 82), (42, 80)):  # fringe to the brow
-    strand([on_head(phi * 0.6, 40, 1.03), on_head(phi * 0.85, 62, 1.065), on_head(phi, tip, 1.05)], 0.022, HAIR,
-           taper=(1.0, 0.0))
+ball((0.0, 0.008, 1.71), 0.1, HAIR, scale=(1.02, 1.05, 0.64), segs=32)  # mass under the hat
+# locks round the sides and back: each S-curves away from the face, swells, then kicks out at the tip.
+# Lengths, sweep and kick vary lock to lock so the silhouette is ragged and spiky, never a bowl line.
+for i, phi in enumerate(range(36, 332, 16)):
+    rnd = ((i * 37) % 11) / 10  # deterministic 0..1 jitter
+    sign = 1 if phi < 180 else -1  # sweep toward the back
+    sweep = (6 + 10 * rnd) * sign
+    tip_theta = 104 + 22 * rnd
+    kick = 1.36 + 0.16 * ((i * 53) % 7) / 6  # the tip flicks outward, visible from the front
+    pts = [on_head(phi, 48, 1.02), on_head(phi + sweep * 0.3, 72, 1.12), on_head(phi + sweep * 0.7, 96, 1.22),
+           on_head(phi + sweep, tip_theta, kick)]
+    strand(pts, 0.031 - 0.008 * rnd, HAIR, taper=(1.0, 0.0))
+for i, phi in enumerate(range(52, 316, 24)):  # a shorter inner layer for volume between the long locks
+    sign = 1 if phi < 180 else -1
+    strand([on_head(phi, 54, 1.02), on_head(phi + 6 * sign, 80, 1.14), on_head(phi + 12 * sign, 98 + 7 * (i % 3), 1.34)],
+           0.025, HAIR, taper=(1.0, 0.0))
+# fringe: clumps parted off-centre, sweeping hard toward his left, ragged lengths, tips curling off the brow
+for phi, tip, sw in ((-52, 90, 18), (-38, 82, 30), (-24, 87, 38), (-10, 80, 42), (4, 86, 42), (18, 79, 38),
+                     (32, 84, 32), (46, 80, 24), (58, 88, 16)):
+    strand([on_head(phi * 0.5, 36, 1.03), on_head(phi * 0.8 + sw * 0.25, 56, 1.09), on_head(phi + sw * 0.65, 72, 1.12),
+            on_head(phi + sw, tip, 1.2)], 0.024, HAIR, taper=(1.0, 0.0))
 for sx in (-1, 1):  # sideburns in front of the ears
-    strand([on_head(78 * sx, 62, 1.04), on_head(80 * sx, 88, 1.06), on_head(78 * sx, 110, 1.04)], 0.014, HAIR,
+    strand([on_head(78 * sx, 62, 1.04), on_head(82 * sx, 90, 1.07), on_head(86 * sx, 114, 1.08)], 0.015, HAIR,
            taper=(1.0, 0.0))
 
-# validation: clamp every hair vertex radially onto the 1.12x ellipsoid if it pokes out
+# validation: clamp every hair vertex radially back inside the bounding ellipsoid if it pokes out
 bound = Vector((HEAD_R.x * HAIR_BOUND, HEAD_R.y * HAIR_BOUND, HEAD_R.z * HAIR_BOUND))
 hair_clamped = hair_total = 0
 bpy.context.view_layer.update()
@@ -215,227 +228,43 @@ ball(eL, 0.055, SUIT, segs=24)
 limb(eL, wL, 0.054, SUIT, r2=0.047, verts=24)
 limb(Vector(wL) + (Vector(eL) - Vector(wL)).normalized() * 0.03, wL, 0.049, SHIRT, verts=20)  # shirt cuff
 
-body = join("KaitoBody", smooth_angle=None)
+# ---- his right arm: raised, gloved hand beside the face holding the card between two fingers (screen left)
+sR, eR, wR = (-0.195, 0.0, 1.38), (-0.33, -0.13, 1.25), (-0.25, -0.2, 1.53)
+limb(sR, eR, 0.062, SUIT, r2=0.055, verts=24)
+ball(eR, 0.055, SUIT, segs=24)
+limb(eR, wR, 0.054, SUIT, r2=0.047, verts=24)
+cuff = loft("CuffR", [((0, 0, 0), 0.049, 0.049), ((0, 0, 0.024), 0.049, 0.049)], SHIRT, n=20, sub=0)
+cuff.location = wR
+cuff.rotation_mode = "QUATERNION"
+cuff.rotation_quaternion = (Vector(wR) - Vector(eR)).to_track_quat("Z", "Y")
+palm = (-0.245, -0.215, 1.585)
+ball(palm, 0.04, GLOVE, scale=(0.85, 0.6, 1.1), segs=24)
+# index and middle fingers extended, pinching the card; three knuckles each
+for dx, length in ((-0.012, 0.075), (0.012, 0.082)):
+    strand([(palm[0] + dx, palm[1] - 0.01, palm[2] + 0.034), (palm[0] + dx * 1.2, palm[1] - 0.026, palm[2] + 0.058),
+            (palm[0] + dx * 1.4 - 0.008, palm[1] - 0.042, palm[2] + 0.034 + length * 0.7),
+            (palm[0] + dx * 1.6 - 0.016, palm[1] - 0.056, palm[2] + 0.034 + length)], 0.0125, GLOVE, taper=(1, 0.75))
+for dx in (0.03, 0.042):  # ring and little fingers curled in
+    strand([(palm[0] + dx * 0.6, palm[1] - 0.012, palm[2] + 0.03), (palm[0] + dx, palm[1] - 0.045, palm[2] + 0.04),
+            (palm[0] + dx * 0.8, palm[1] - 0.04, palm[2] + 0.005)], 0.0115, GLOVE, taper=(1, 0.8))
+strand([(palm[0] + 0.03, palm[1], palm[2] - 0.02), (palm[0] + 0.05, palm[1] - 0.04, palm[2] + 0.0),
+        (palm[0] + 0.045, palm[1] - 0.06, palm[2] + 0.03)], 0.0125, GLOVE, taper=(1, 0.8))  # thumb
+for k in range(3):  # glove stitching on the back of the hand
+    strand([(palm[0] - 0.012 + k * 0.012, palm[1] + 0.022, palm[2] - 0.012),
+            (palm[0] - 0.012 + k * 0.012, palm[1] + 0.024, palm[2] + 0.022)], 0.0016, SUIT_SHADE, taper=(1, 1))
+
+kaito = join("Kaito", smooth_angle=None)
 bpy.data.objects.remove(pivot)
 
-# =================================================================== right arm and glove (rigged)
-# Rest pose: arm straight out along -X, palm down. Hand-local axes at rest:
-#   along (bone Y) = -X world, spread (bone X, index side +) = -Y world, palm normal (bone Z) = -Z world.
-S = Vector((-0.195, 0.0, 1.385))
-UPPER, FORE, PALM = 0.17, 0.16, 0.055
-HS = 1.2  # anime gloves read a size larger than life
-E0 = S + Vector((-UPPER, 0, 0))
-W0 = E0 + Vector((-FORE, 0, 0))
-ALONG, SPREAD, PALMN = Vector((-1, 0, 0)), Vector((0, -1, 0)), Vector((0, 0, -1))
-
-
-def hp(a, b, c):
-    """Hand-local rest coordinates (spread, palm-normal, along) -> world."""
-    return W0 + (SPREAD * a + PALMN * b + ALONG * c) * HS
-
-
-# name: (spread, base along, segment lengths, radius)
-FINGERS = {
-    "index": (0.0205, 0.053, (0.03, 0.021, 0.018), 0.0085),
-    "middle": (0.0005, 0.055, (0.032, 0.023, 0.019), 0.0085),
-    "ring": (-0.0165, 0.053, (0.03, 0.021, 0.017), 0.008),
-    "pinky": (-0.031, 0.049, (0.024, 0.017, 0.015), 0.007),
-}
-THUMB_BASE, THUMB_LEN, THUMB_R = (0.022, 0.006, 0.012), (0.024, 0.02, 0.017), 0.009
-THUMB_REST = n((0.6, 0.3, 0.75))
-tdir = SPREAD * THUMB_REST.x + PALMN * THUMB_REST.y + ALONG * THUMB_REST.z
-
-limb(S, E0, 0.062, SUIT, r2=0.055, verts=24)
-ball(E0, 0.055, SUIT, segs=24)
-limb(E0, W0, 0.054, SUIT, r2=0.047, verts=24)
-limb(hp(0, 0, -0.045), hp(0, 0, -0.024), 0.05, SHIRT, verts=24)  # shirt cuff
-limb(hp(0, 0, -0.026), hp(0, 0, 0.012), 0.056, GLOVE, r2=0.04, verts=24)  # flared glove cuff over it
-ball(hp(0.0, 0.0, 0.03), HS, GLOVE, scale=(0.033, 0.035, 0.0155), segs=28)  # palm, a rounded slab
-limb(hp(-0.03, -0.004, 0.05), hp(0.028, -0.004, 0.05), 0.0105 * HS, GLOVE, verts=16)  # knuckle ridge
-for k in range(3):  # stitching on the back of the glove
-    strand([hp(-0.012 + k * 0.012, -0.0152, 0.008), hp(-0.012 + k * 0.012, -0.0158, 0.038)], 0.0013, SUIT_SHADE,
-           taper=(1, 1))
-for name, (s, base, lens, r) in FINGERS.items():  # three phalanges, rounded joints, a fingertip
-    p = hp(s, 0, base)
-    ball(p, r * HS * 1.05, GLOVE, segs=16)
-    for i, length in enumerate(lens):
-        q = p + ALONG * length * HS
-        rr = r * HS * (1 - 0.06 * (i + 1))
-        limb(p, q, r * HS * (1 - 0.06 * i), GLOVE, r2=rr, verts=16)
-        ball(q, rr, GLOVE, segs=16)
-        p = q
-p = hp(*THUMB_BASE)
-ball(p, THUMB_R * HS * 1.1, GLOVE, segs=16)
-for i, length in enumerate(THUMB_LEN):
-    q = p + tdir * length * HS
-    limb(p, q, THUMB_R * HS * (1 - 0.07 * i), GLOVE, r2=THUMB_R * HS * (1 - 0.07 * (i + 1)), verts=16)
-    ball(q, THUMB_R * HS * (1 - 0.07 * (i + 1)), GLOVE, segs=16)
-    p = q
-arm = join("ArmR", smooth_angle=None)
-
-# ---- armature: spine, neck, head, clavicles, arms, hand and three bones per finger
-arm_data = bpy.data.armatures.new("Rig")
-rig = bpy.data.objects.new("Rig", arm_data)
-bpy.context.collection.objects.link(rig)
-bpy.ops.object.select_all(action="DESELECT")
-bpy.context.view_layer.objects.active = rig
-rig.select_set(True)
-bpy.ops.object.mode_set(mode="EDIT")
-eb = arm_data.edit_bones
-
-
-def bone(name, head_pt, tail_pt, parent=None, roll_to=None, connect=False):
-    b = eb.new(name)
-    b.head, b.tail = Vector(head_pt), Vector(tail_pt)
-    if roll_to is not None:
-        b.align_roll(Vector(roll_to))
-    if parent:
-        b.parent = eb[parent]
-        b.use_connect = connect
-    return b
-
-
-bone("spine", (0, 0, Z_CUT), (0, 0, 1.3))
-bone("neck", (0, 0, 1.43), (0, 0, 1.53), "spine")
-bone("head", (0, 0, 1.53), (0, 0, 1.78), "neck", connect=True)
-for side, sx in (("R", -1), ("L", 1)):
-    bone(f"clavicle_{side}", (0.02 * sx, 0, 1.4), (0.195 * sx, 0, 1.385), "spine")
-bone("upper_arm_R", S, E0, "clavicle_R", roll_to=PALMN, connect=True)
-bone("forearm_R", E0, W0, "upper_arm_R", roll_to=PALMN, connect=True)
-bone("hand_R", W0, hp(0, 0, PALM), "forearm_R", roll_to=PALMN, connect=True)
-for name, (s, base, lens, r) in FINGERS.items():
-    p, parent = hp(s, 0, base), "hand_R"
-    for i, length in enumerate(lens):
-        q = p + ALONG * length * HS
-        bone(f"{name}_0{i + 1}_R", p, q, parent, roll_to=PALMN, connect=i > 0)
-        p, parent = q, f"{name}_0{i + 1}_R"
-p, parent = hp(*THUMB_BASE), "hand_R"
-for i, length in enumerate(THUMB_LEN):
-    q = p + tdir * length * HS
-    bone(f"thumb_0{i + 1}_R", p, q, parent, roll_to=PALMN, connect=i > 0)
-    p, parent = q, f"thumb_0{i + 1}_R"
-bone("upper_arm_L", sL, eL, "clavicle_L")
-bone("forearm_L", eL, wL, "upper_arm_L", connect=True)
-bpy.ops.object.mode_set(mode="OBJECT")
-
-# ---- skinning: automatic weights, with a nearest-bone fallback if the heat solve leaves vertices unweighted
-deform = ["upper_arm_R", "forearm_R", "hand_R"] + [f"{f}_0{i}_R" for f in (*FINGERS, "thumb") for i in (1, 2, 3)]
-for b in arm_data.bones:
-    b.use_deform = b.name in deform
-bpy.ops.object.select_all(action="DESELECT")
-arm.select_set(True)
-rig.select_set(True)
-bpy.context.view_layer.objects.active = rig
-bpy.ops.object.parent_set(type="ARMATURE_AUTO")
-unweighted = [v.index for v in arm.data.vertices if sum(g.weight for g in v.groups) < 1e-4]
-weighting = "automatic"
-if unweighted:
-    weighting = f"nearest-bone fallback ({len(unweighted)} vertices had no automatic weight)"
-    segs = {b.name: (rig.matrix_world @ b.head_local, rig.matrix_world @ b.tail_local) for b in arm_data.bones
-            if b.name in deform}
-    groups = {name: arm.vertex_groups.get(name) or arm.vertex_groups.new(name=name) for name in segs}
-    for g in groups.values():
-        g.remove(list(range(len(arm.data.vertices))))
-    for v in arm.data.vertices:
-        w = arm.matrix_world @ v.co
-        dists = []
-        for name, (a, b) in segs.items():
-            ab = b - a
-            t = max(0.0, min(1.0, (w - a).dot(ab) / ab.length_squared))
-            dists.append(((w - (a + ab * t)).length, name))
-        dists.sort()
-        (d0, n0), (d1, n1) = dists[0], dists[1]
-        w0, w1 = 1 / (d0 ** 4 + 1e-12), 1 / (d1 ** 4 + 1e-12)
-        groups[n0].add([v.index], w0 / (w0 + w1), "REPLACE")
-        groups[n1].add([v.index], w1 / (w0 + w1), "REPLACE")
-
-# ---- pose through the bones
-WR = Vector((-0.25, -0.15, 1.52))  # wrist beside the face, a little above shoulder height
-POLE = S + Vector((-0.3, -0.05, -0.25))  # elbow out and down
-
-
-def elbow(s, w, a, b, pole):
-    d = min((w - s).length, a + b - 1e-4)
-    u = (w - s).normalized()
-    cos_a = (a * a + d * d - b * b) / (2 * a * d)
-    side = (pole - s) - u * (pole - s).dot(u)
-    return s + u * (a * cos_a) + side.normalized() * (a * math.sqrt(max(0.0, 1 - cos_a * cos_a)))
-
-
-ER = elbow(S, WR, UPPER, FORE, POLE)
-
-# hand frame: fingers up, palm facing out (-X) so the index finger is in front; then tilted 15 degrees to camera
-yh = n((-0.05, -0.05, 1.0))
-zh = n(Vector((-1, 0, 0)) - yh * yh.dot(Vector((-1, 0, 0))))
-xh = yh.cross(zh)
-tilt = Matrix.Rotation(math.radians(-15), 3, yh)
-xh, zh = tilt @ xh, tilt @ zh
-
-
-def frame(head_pt, y, x_hint):
-    y = y.normalized()
-    z = x_hint.cross(y).normalized()
-    x = y.cross(z).normalized()
-    m = Matrix((x, y, z)).transposed().to_4x4()
-    m.translation = head_pt
-    return m
-
-
-def posed(a, b, c):
-    return WR + (xh * a + zh * b + yh * c) * HS
-
-
-targets = {
-    "upper_arm_R": frame(S, ER - S, Vector((0, -1, 0))),
-    "forearm_R": frame(ER, WR - ER, Vector((0, -1, 0))),
-    "hand_R": frame(WR, yh, xh),
-}
-CURL = {"index": (8, 6, 4), "middle": (8, 6, 4), "ring": (70, 85, 55), "pinky": (75, 85, 55)}  # degrees per joint
-finger_joints = {}
-for name, (s, base, lens, r) in FINGERS.items():
-    p, angle = posed(s, 0, base), 0.0
-    joints = [p]
-    for i, length in enumerate(lens):
-        angle += math.radians(CURL[name][i])
-        d = yh * math.cos(angle) + zh * math.sin(angle)
-        targets[f"{name}_0{i + 1}_R"] = frame(p, d, xh)
-        p = p + d * length * HS
-        joints.append(p)
-    finger_joints[name] = joints
-p = posed(*THUMB_BASE)
-for i, (a, b, c) in enumerate(((-0.15, 0.55, 0.8), (-0.6, 0.6, 0.5), (-0.85, 0.45, 0.25))):  # folded over the palm
-    d = n(xh * a + zh * b + yh * c)
-    targets[f"thumb_0{i + 1}_R"] = frame(p, d, zh.cross(d))
-    p = p + d * THUMB_LEN[i] * HS
-for name in ["upper_arm_R", "forearm_R", "hand_R"] + [f"{f}_0{i}_R" for f in (*FINGERS, "thumb") for i in (1, 2, 3)]:
-    rig.pose.bones[name].matrix = rig.matrix_world.inverted() @ targets[name]
-    bpy.context.view_layer.update()
-
-# ---- the calling card, pinched between index and middle near the second joint
-body_top = max((body.matrix_world @ Vector(c)).z for c in body.bound_box)
-H = body_top - Z_CUT  # working units per final unit (the model is normalised to 1.0 tall below)
-# 63 x 88 card ratio, shown 1.35x so the doodle reads at hero size; faces 1 mm apart so they never z-fight
-CARD_SCALE = 1.35
-CARD_W, CARD_H, CARD_T, CLEAR = 0.063 * H * CARD_SCALE, 0.088 * H * CARD_SCALE, 0.0012, 0.0005 * H
-pi, pm = finger_joints["index"][1], finger_joints["middle"][1]
-normal = xh.normalized()
-up0 = (finger_joints["index"][1] - finger_joints["index"][0]).normalized()
-up0 = (up0 - normal * up0.dot(normal)).normalized()
-lean_a, lean_b = Matrix.Rotation(math.radians(22), 3, normal) @ up0, Matrix.Rotation(math.radians(-22), 3, normal) @ up0
-up = lean_a if lean_a.x < lean_b.x else lean_b  # lean the top away from his face
-right = up.cross(normal).normalized()
-out = right if right.x < 0 else -right  # away from his face
-# the fingers pinch the lower inner corner, leaving the doodle clear
-centre = (pi + pm) / 2 + up * (CARD_H * 0.5 - CARD_H * 0.16) + out * (CARD_W * 0.3)
+# ---- the calling card: Axel's reference photo of the ace of clubs and its harlequin back, two faces 1 mm apart
 card_parts = []
-for side, sign in (("front", 1), ("back", -1)):
-    bpy.ops.mesh.primitive_plane_add(size=1)
+for side, flip in (("front", 0.0), ("back", math.pi)):
+    bpy.ops.mesh.primitive_plane_add(size=1, rotation=(math.radians(90), 0, flip))
     o = cur()
-    basis = Matrix((right * sign, up, normal * sign)).transposed().to_4x4()
-    basis.translation = centre + normal * (CARD_T / 2) * sign
-    o.matrix_world = basis @ Matrix.Diagonal((CARD_W, CARD_H, 1, 1))
+    o.scale = (0.092, 0.15, 1)  # the photo's own proportions, about 1.5x a real card so it reads beside the face
+    o.location.y = -0.0006 if flip == 0 else 0.0006
     o.data.materials.append(mat("Card" + side.title(), "#ffffff", rough=0.4,
-                                image=os.path.join(CACHE, f"card-{side}.png")))
+                                image=os.path.join(TEXTURES, f"card-{side}.png")))
     card_parts.append(o)
 bpy.ops.object.select_all(action="DESELECT")
 for o in card_parts:
@@ -445,40 +274,12 @@ bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 bpy.ops.object.join()
 card = cur()
 card.name = card.data.name = "Card"
-bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
-mw = card.matrix_world.copy()  # parent to the index finger bone so it follows the hand
-card.parent, card.parent_type, card.parent_bone = rig, "BONE", "index_02_R"
+card.location = (-0.285, -0.262, 1.715)
+card.rotation_euler = (math.radians(-6), math.radians(14), math.radians(-18))
+
+# ---- normalise: 1.0 tall, origin at the centre of the thigh cut
 bpy.context.view_layer.update()
-card.matrix_world = mw
-
-# ---- bake the pose into the mesh, check the card against both fingers
-bpy.ops.object.select_all(action="DESELECT")
-arm.select_set(True)
-bpy.context.view_layer.objects.active = arm
-bpy.ops.object.modifier_apply(modifier=arm.modifiers[0].name)
-pinch = {g.index for g in arm.vertex_groups if g.name.startswith(("index_", "middle_"))}
-min_gap, inside = 1e9, 0
-for v in arm.data.vertices:
-    if not v.groups or max(v.groups, key=lambda g: g.weight).group not in pinch:
-        continue
-    rel = (arm.matrix_world @ v.co) - centre
-    if abs(rel.dot(up)) <= CARD_H / 2 and abs(rel.dot(right)) <= CARD_W / 2:
-        inside += 1
-        min_gap = min(min_gap, abs(rel.dot(normal)) - CARD_T / 2)
-mw = card.matrix_world.copy()
-card.parent = None
-card.matrix_world = mw
-bpy.data.objects.remove(rig)
-arm.vertex_groups.clear()
-
-# ---- one mesh for the figure, then normalise: 1.0 tall, origin at the centre of the thigh cut
-bpy.ops.object.select_all(action="DESELECT")
-body.select_set(True)
-arm.select_set(True)
-bpy.context.view_layer.objects.active = body
-bpy.ops.object.join()
-kaito = cur()
-kaito.name = kaito.data.name = "Kaito"
+H = max((kaito.matrix_world @ Vector(c)).z for c in kaito.bound_box) - Z_CUT
 norm = Matrix.Scale(1 / H, 4) @ Matrix.Translation((0, 0, -Z_CUT))
 for o in (kaito, card):
     o.matrix_world = norm @ o.matrix_world
@@ -493,10 +294,6 @@ bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)  # kee
 
 print("SUMMARY vertices:", sum(len(o.data.vertices) for o in (kaito, card)))
 print(f"SUMMARY hair: {hair_clamped} of {hair_total} vertices clamped into the {HAIR_BOUND}x head ellipsoid")
-print(f"SUMMARY skinning: {weighting}")
-gap_txt = f"{min_gap / H:.5f}" if inside else "n/a"
-print(f"SUMMARY card vs fingers: {inside} finger vertices over the card, min clearance {gap_txt} "
-      f"(need >= {CLEAR / H:.4f}) -> {'OK' if inside and min_gap >= CLEAR else 'CHECK'}")
 
 export_and_render("kaito", cam_loc=(-0.36, -1.75, 0.62), target=(-0.05, 0.0, 0.5), lens=55, res=(1000, 1250),
                   outline=0.003, sun_rot=(48, 0, -35), skip_outline=("Card",))
