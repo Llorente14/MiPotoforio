@@ -49,12 +49,29 @@ def ring(half, z, corner_lift=0.0, corner_push=1.0):
     return pts
 
 
-def roof(z, size):
-    """Hipped roof whose eave corners sweep upward (the classic flared silhouette)."""
-    outer = ring(size * 0.8, z, corner_lift=0.24, corner_push=1.14)
-    inner = ring(size * 0.3, z + 0.3)
-    faces = [(i, (i + 1) % 8, 8 + (i + 1) % 8, 8 + i) for i in range(8)] + [tuple(range(8, 16))]
-    return mesh("Roof", outer + inner, faces, ROOF, thickness=0.07)
+def roof(z, size, per_side=12, rings=9):
+    """Hipped roof with a concave sweep and eave corners that curl upward (the classic flared silhouette)."""
+    outer, inner = size * 0.8, size * 0.22
+    n = per_side * 4
+    verts = []
+    for j in range(rings + 1):
+        t = j / rings
+        half = outer + (inner - outer) * t
+        for i in range(n):
+            p = i / per_side
+            k, f = int(p), p - int(p)
+            c = 1 - min(f, 1 - f) * 2  # 1 at a corner, 0 mid-side
+            corners = ((1, -1), (1, 1), (-1, 1), (-1, -1))
+            ax, ay = corners[k]
+            bx, by = corners[(k + 1) % 4]
+            push = 1 + 0.13 * c ** 3 * (1 - t)
+            x = (ax + (bx - ax) * f) * half * push
+            y = (ay + (by - ay) * f) * half * push
+            verts.append((x, y, z + 0.34 * t ** 1.7 + 0.24 * c ** 3 * (1 - t) ** 2))
+    faces = [(j * n + i, j * n + (i + 1) % n, (j + 1) * n + (i + 1) % n, (j + 1) * n + i)
+             for j in range(rings) for i in range(n)]
+    faces.append(tuple(range(rings * n, rings * n + n)))
+    return mesh("Roof", verts, faces, ROOF, thickness=0.06)
 
 
 # ---------- stone base (tapered) ----------
@@ -79,6 +96,21 @@ for i, s in enumerate((1.0, 0.85, 0.72)):
         for k in (-1, 1):  # corner posts
             block(nx * d + (k * s / 2 if ny else 0), ny * d + (k * s / 2 if nx else 0), z0 + 0.25,
                   0.05, 0.05, 0.5, DARK_RED)
+    # bracket band (masugumi) carrying the eaves, then the roof
+    block(0, 0, z0 + 0.47, s * 1.12, s * 1.12, 0.06, DARK_RED)
+    for ax in ((1, 0), (0, 1), (-1, 0), (0, -1)):
+        for k in range(-3, 4):
+            nx, ny = ax
+            block(nx * s * 0.6 + (k * s * 0.14 if ny else 0), ny * s * 0.6 + (k * s * 0.14 if nx else 0), z0 + 0.43,
+                  0.05 if ny else 0.06, 0.05 if nx else 0.06, 0.03, GOLD if k == 0 else DARK_RED)
+    if i:  # balcony railing round the deck
+        for ax in ((1, 0), (0, 1), (-1, 0), (0, -1)):
+            nx, ny = ax
+            d = s * 0.58
+            block(nx * d, ny * d, z0 + 0.11, s * 1.16 if ny else 0.02, s * 1.16 if nx else 0.02, 0.02, DARK_RED)
+            for k in range(-4, 5):
+                block(nx * d + (k * s * 0.13 if ny else 0), ny * d + (k * s * 0.13 if nx else 0), z0 + 0.07,
+                      0.018, 0.018, 0.09, DARK_RED)
     roof(z0 + 0.5, s * (1.25 if i < 2 else 1.15))
 
 # ---------- sorin (spire) ----------

@@ -12,7 +12,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 import bpy  # noqa: E402
-from toon import cur, export_and_render, join, keep, mat  # noqa: E402
+from toon import ball, cur, export_and_render, join, keep, limb, mat  # noqa: E402
 
 CLADDING = mat("Cladding", "#d9d3c7", rough=0.5)
 RIB = mat("Rib", "#b9b2a4", rough=0.5)
@@ -86,6 +86,33 @@ for i in range(13):
 block(-0.36, 0.16, -0.56, 0.25, 2.62, 2.66, CONCRETE)  # top canopy
 block(-0.34, -0.32, -0.52, 0.25, 0.36, 2.62, FRAME)  # corner mullions
 block(0.12, 0.14, -0.52, 0.25, 0.36, 2.62, FRAME)
+
+# ---------- finer detail: mullions, side windows, rooftop plant, columns, steps, planters ----------
+for i in range(1, 8):  # vertical mullions on the blue curtain wall
+    x = -1.1 + i * 0.1
+    block(x - 0.006, x + 0.006, -0.158, -0.15, 0.36, 2.55, FRAME)
+for i in range(1, 4):  # glass bay mullions
+    x = -0.32 + i * 0.11
+    block(x - 0.006, x + 0.006, -0.515, -0.5, 0.36, 2.62, FRAME)
+for i in range(7):  # ribbon windows down the slab's side face
+    z = 0.6 + i * 0.3
+    block(x1, x1 + 0.012, -0.28, 0.28, z, z + 0.12, GLASS)
+    block(x1, x1 + 0.016, -0.28, 0.28, z - 0.012, z, FRAME)
+block(-1.12, -0.28, -0.17, 0.62, 2.55, 2.62, CONCRETE)  # parapet on the blue block
+for x, y in ((-0.95, 0.2), (-0.65, 0.35), (-0.5, 0.1)):  # rooftop plant
+    block(x - 0.07, x + 0.07, y - 0.05, y + 0.05, 2.62, 2.7, FRAME)
+for x in (-1.25, 0.27):  # canopy columns, clear of the name on the shopfront
+    bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.025, depth=0.36, location=(x, -0.96, 0.18))
+    keep(cur(), CONCRETE)
+for k in range(3):  # entrance steps
+    block(-1.0 + k * 0.03, 0.05 - k * 0.03, -1.05 - k * 0.06, -0.75, 0.0, 0.06 - k * 0.02, CONCRETE)
+LEAF = mat("Leaf", "#5f7a45")
+TRUNK = mat("Trunk", "#6b4a35")
+for x in (-1.2, 0.55, 0.95):  # planters with small trees along the front
+    block(x - 0.09, x + 0.09, -0.92, -0.78, 0.0, 0.08, CONCRETE)
+    limb((x, -0.85, 0.08), (x, -0.85, 0.3), 0.012, TRUNK)
+    for dx, dz, rr in ((0, 0.36, 0.09), (-0.05, 0.31, 0.06), (0.05, 0.32, 0.065)):
+        ball((x + dx, -0.85, dz), rr, LEAF, segs=16)
 
 join("Untar", smooth_angle=30).scale.z = 1.35  # the real tower is slender
 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
