@@ -2,6 +2,7 @@ import { Bounds, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Component, Suspense, useRef, type ReactNode } from 'react';
 import type { Group } from 'three';
+import { cardProgress } from '../lib/card-progress';
 
 useGLTF.setDecoderPath('/draco/');
 
@@ -36,7 +37,33 @@ function Placeholder({ id }: { id: ModelId }) {
       </group>
     );
   }
-  if (id === 'akai' || id === 'kaito') {
+  if (id === 'kaito') {
+    return (
+      <group>
+        <Mesh position={[0, 0.7, 0]}>
+          <capsuleGeometry args={[0.4, 0.9, 4, 6]} />
+          <meshStandardMaterial color="#f5f5f5" flatShading />
+        </Mesh>
+        <Mesh position={[0, 0.6, -0.3]}>
+          <coneGeometry args={[0.9, 1.6, 5]} />
+          <meshStandardMaterial color="#e8e8f0" flatShading />
+        </Mesh>
+        <Mesh position={[0, 1.75, 0]}>
+          <sphereGeometry args={[0.3, 6, 4]} />
+          <meshStandardMaterial color={SAKURA} flatShading />
+        </Mesh>
+        <Mesh position={[0, 2.15, 0]}>
+          <cylinderGeometry args={[0.22, 0.26, 0.45, 6]} />
+          <meshStandardMaterial color="#f5f5f5" flatShading />
+        </Mesh>
+        <Mesh position={[0.6, 1.2, 0.3]}>
+          <boxGeometry args={[0.35, 0.5, 0.03]} />
+          <meshStandardMaterial color="#ffffff" flatShading />
+        </Mesh>
+      </group>
+    );
+  }
+  if (id === 'akai') {
     return (
       <group>
         <Mesh position={[0, 0.6, 0]}>
@@ -64,6 +91,12 @@ function Placeholder({ id }: { id: ModelId }) {
 
 function Model({ id }: { id: ModelId }) {
   const { scene } = useGLTF(`/models/${id}.glb`);
+  // The Hero card flies as a page overlay once the transition starts; hide the in-scene copy then.
+  useFrame(() => {
+    if (id !== 'kaito') return;
+    const card = scene.getObjectByName('Card');
+    if (card) card.visible = cardProgress.value < 0.02;
+  });
   return <primitive object={scene} />;
 }
 
@@ -78,10 +111,18 @@ class MissingModelBoundary extends Component<{ id: ModelId; children: ReactNode 
   }
 }
 
-function Spinner({ children, reducedMotion }: { children: ReactNode; reducedMotion: boolean }) {
+function Spinner({ id, children, reducedMotion }: { id: ModelId; children: ReactNode; reducedMotion: boolean }) {
   const ref = useRef<Group>(null);
+  const t = useRef(0);
   useFrame((_, delta) => {
-    if (!reducedMotion && ref.current) ref.current.rotation.y += delta * 0.4;
+    if (reducedMotion || !ref.current) return;
+    if (id === 'kaito') {
+      // Kaito faces the camera: sway instead of a full turn.
+      t.current += delta;
+      ref.current.rotation.y = Math.sin(t.current * 0.6) * 0.35;
+    } else {
+      ref.current.rotation.y += delta * 0.4;
+    }
   });
   return <group ref={ref}>{children}</group>;
 }
@@ -99,7 +140,7 @@ export default function ModelScene({ id, reducedMotion }: { id: ModelId; reduced
       <directionalLight position={[5, 8, 5]} intensity={1.6} />
       <Suspense fallback={null}>
         <Bounds fit observe margin={1.25}>
-          <Spinner reducedMotion={reducedMotion}>
+          <Spinner id={id} reducedMotion={reducedMotion}>
             <MissingModelBoundary id={id}>
               <Model id={id} />
             </MissingModelBoundary>
