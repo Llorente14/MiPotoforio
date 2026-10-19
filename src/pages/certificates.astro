@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CertificateGallery from '../components/CertificateGallery.astro';
+
+const certificates = (await getCollection('certificates')).sort(
+  (a, b) => a.data.featuredOrder - b.data.featuredOrder,
+);
+---
+
+<BaseLayout title="Certificates | Axel Chrisdy Sanjaya" description="Certificates earned by Axel Chrisdy Sanjaya.">
+  <div class="mx-auto max-w-5xl px-4 pb-16 pt-20">
+    <a class="underline" href="/">Back to home</a>
+    <h1 class="mt-4 font-display text-3xl">Certificates</h1>
+    <CertificateGallery certificates={certificates} />
+  </div>
+</BaseLayout>

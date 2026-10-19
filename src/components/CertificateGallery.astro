@@ -1,0 +1,82 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  certificates: CollectionEntry<'certificates'>[];
+}
+
+const { certificates } = Astro.props;
+const fmt = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+
+<ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    certificates.map((c) => (
+      <li class="overflow-hidden rounded-lg bg-paper/80 shadow backdrop-blur">
+        <button
+          type="button"
+          data-cert-open
+          data-title={c.data.title}
+          data-issuer={c.data.issuer}
+          data-date={fmt.format(c.data.date)}
+          data-image={c.data.image}
+          data-alt={c.data.imageAlt}
+          data-verify={c.data.verifyUrl ?? ''}
+          class="block h-full w-full text-left"
+        >
+          <img src={c.data.image} alt={c.data.imageAlt} width="1200" height="850" loading="lazy" class="aspect-[1200/850] w-full object-cover" />
+          <span class="block p-4">
+            <span class="block font-display text-lg">{c.data.title}</span>
+            <span class="mt-1 block text-sm">{c.data.issuer} · {fmt.format(c.data.date)}</span>
+          </span>
+        </button>
+      </li>
+    ))
+  }
+</ul>
+
+<dialog
+  id="cert-dialog"
+  aria-labelledby="cert-dialog-title"
+  class="m-auto max-h-[90vh] w-[min(90vw,48rem)] overflow-auto rounded-lg bg-paper p-4 text-ink backdrop:bg-black/70"
+>
+  <img id="cert-dialog-image" src="" alt="" class="w-full rounded" />
+  <h2 id="cert-dialog-title" class="mt-4 font-display text-2xl"></h2>
+  <p id="cert-dialog-meta" class="mt-1"></p>
+  <div class="mt-4 flex flex-wrap gap-4">
+    <a id="cert-dialog-verify" hidden class="underline" target="_blank" rel="noopener noreferrer">Verify</a>
+    <button type="button" id="cert-dialog-close" class="rounded bg-torii px-4 py-1 text-paper">Close</button>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#cert-dialog')!;
+  const q = <T extends HTMLElement>(id: string) => dialog.querySelector<T>(`#${id}`)!;
+  const image = q<HTMLImageElement>('cert-dialog-image');
+  const title = q('cert-dialog-title');
+  const meta = q('cert-dialog-meta');
+  const verify = q<HTMLAnchorElement>('cert-dialog-verify');
+  let trigger: HTMLElement | null = null;
+
+  document.querySelectorAll<HTMLButtonElement>('[data-cert-open]').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      trigger = btn;
+      image.src = btn.dataset.image ?? '';
+      image.alt = btn.dataset.alt ?? '';
+      title.textContent = btn.dataset.title ?? '';
+      meta.textContent = `${btn.dataset.issuer} · ${btn.dataset.date}`;
+      const url = btn.dataset.verify;
+      verify.hidden = !url;
+      if (url) verify.href = url;
+      dialog.showModal();
+    }),
+  );
+
+  q('cert-dialog-close').addEventListener('click', () => dialog.close());
+  // Backdrop click: the dialog element itself is the event target.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+  // showModal() traps focus and Escape closes; restore focus explicitly for all browsers.
+  dialog.addEventListener('close', () => trigger?.focus());
+</script>
