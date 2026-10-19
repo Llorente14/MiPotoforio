@@ -10,9 +10,11 @@ interface Props {
   alt: string;
   // Above-the-fold slot: load its still immediately and at high priority.
   priority?: boolean;
+  // CSS aspect-ratio of the slot; the figure stands in it with no frame.
+  aspect?: string;
 }
 
-export default function ModelSlot({ id, alt, priority = false }: Props) {
+export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' }: Props) {
   const [mode, setMode] = useState<{ allow3d: boolean; reducedMotion: boolean }>({
     allow3d: false,
     reducedMotion: false,
@@ -24,8 +26,8 @@ export default function ModelSlot({ id, alt, priority = false }: Props) {
     <img
       src={`/renders/${id}.webp`}
       alt={alt}
-      width={800}
-      height={600}
+      width={1000}
+      height={1250}
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : 'auto'}
       onError={(e) => {
@@ -40,7 +42,8 @@ export default function ModelSlot({ id, alt, priority = false }: Props) {
   return (
     <div
       data-model-slot={id}
-      className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sakura/50 via-paper/60 to-torii/30 shadow"
+      className="relative flex w-full items-center justify-center"
+      style={{ aspectRatio: aspect }}
     >
       {mode.allow3d ? (
         <div role="img" aria-label={alt} className="absolute inset-0">

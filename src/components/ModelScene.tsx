@@ -1,151 +1,164 @@
-import { Bounds, useGLTF } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Component, Suspense, useRef, type ReactNode } from 'react';
-import type { Group } from 'three';
+import { Bounds, ContactShadows, useGLTF } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import {
+  BackSide,
+  Box3,
+  DataTexture,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  MeshToonMaterial,
+  NearestFilter,
+  RedFormat,
+  Vector3,
+  type Group,
+  type Object3D,
+} from 'three';
 import { cardProgress } from '../lib/card-progress';
 
 useGLTF.setDecoderPath('/draco/');
 
 export type ModelId = 'untar' | 'temple' | 'akai' | 'kaito';
 
-const SAKURA = '#f4b6c2';
-const TORII = '#c8362b';
-const WOOD = '#8d6e63';
-const STONE = '#b0a99f';
+const INK = '#17140f';
 
-function Mesh({ position, children }: { position: [number, number, number]; children: ReactNode }) {
-  return <mesh position={position}>{children}</mesh>;
+// Three hard tones (shadow, mid, lit): the same cel steps as the Blender stills.
+const gradientMap = (() => {
+  const tex = new DataTexture(new Uint8Array([110, 190, 255]), 3, 1, RedFormat);
+  tex.minFilter = tex.magFilter = NearestFilter;
+  tex.needsUpdate = true;
+  return tex;
+})();
+
+// Inverted hull: back faces only, pushed out along the normal in the vertex shader.
+function inkMaterial(thickness: number) {
+  const m = new MeshBasicMaterial({ color: INK, side: BackSide });
+  m.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>\ntransformed += normalize(normal) * ${thickness.toFixed(4)};`,
+    );
+  };
+  return m;
 }
 
-// Primitive stand-ins, used only when /models/<id>.glb is missing.
-function Placeholder({ id }: { id: ModelId }) {
-  if (id === 'temple') {
-    return (
-      <group>
-        {[0, 1, 2].map((i) => (
-          <group key={i}>
-            <Mesh position={[0, i * 1.1, 0]}>
-              <cylinderGeometry args={[0.9 - i * 0.2, 0.9 - i * 0.2, 0.7, 6]} />
-              <meshStandardMaterial color={WOOD} flatShading />
-            </Mesh>
-            <Mesh position={[0, i * 1.1 + 0.55, 0]}>
-              <coneGeometry args={[1.5 - i * 0.3, 0.5, 6]} />
-              <meshStandardMaterial color={TORII} flatShading />
-            </Mesh>
-          </group>
-        ))}
-      </group>
-    );
+// Swap the glTF PBR materials for toon ones and give every mesh an ink outline.
+function toonify(root: Object3D) {
+  const size = new Box3().setFromObject(root).getSize(new Vector3());
+  const ink = inkMaterial(Math.max(size.x, size.y, size.z) * 0.0042);
+  const meshes: Mesh[] = [];
+  root.traverse((o) => {
+    if ((o as Mesh).isMesh) meshes.push(o as Mesh);
+  });
+  for (const mesh of meshes) {
+    const src = mesh.material as MeshStandardMaterial;
+    mesh.material = new MeshToonMaterial({
+      color: src.color,
+      map: src.map,
+      gradientMap,
+      transparent: src.transparent,
+      alphaTest: src.map ? 0.5 : 0,
+    });
+    if (mesh.name === 'Card') continue;
+    const hull = new Mesh(mesh.geometry, ink);
+    hull.name = `${mesh.name}Outline`;
+    mesh.add(hull);
   }
-  if (id === 'kaito') {
-    return (
-      <group>
-        <Mesh position={[0, 0.7, 0]}>
-          <capsuleGeometry args={[0.4, 0.9, 4, 6]} />
-          <meshStandardMaterial color="#f5f5f5" flatShading />
-        </Mesh>
-        <Mesh position={[0, 0.6, -0.3]}>
-          <coneGeometry args={[0.9, 1.6, 5]} />
-          <meshStandardMaterial color="#e8e8f0" flatShading />
-        </Mesh>
-        <Mesh position={[0, 1.75, 0]}>
-          <sphereGeometry args={[0.3, 6, 4]} />
-          <meshStandardMaterial color={SAKURA} flatShading />
-        </Mesh>
-        <Mesh position={[0, 2.15, 0]}>
-          <cylinderGeometry args={[0.22, 0.26, 0.45, 6]} />
-          <meshStandardMaterial color="#f5f5f5" flatShading />
-        </Mesh>
-        <Mesh position={[0.6, 1.2, 0.3]}>
-          <boxGeometry args={[0.35, 0.5, 0.03]} />
-          <meshStandardMaterial color="#ffffff" flatShading />
-        </Mesh>
-      </group>
-    );
-  }
-  if (id === 'akai') {
-    return (
-      <group>
-        <Mesh position={[0, 0.6, 0]}>
-          <capsuleGeometry args={[0.35, 0.8, 4, 6]} />
-          <meshStandardMaterial color="#263238" flatShading />
-        </Mesh>
-        <Mesh position={[0, 1.6, 0]}>
-          <sphereGeometry args={[0.3, 6, 4]} />
-          <meshStandardMaterial color={SAKURA} flatShading />
-        </Mesh>
-      </group>
-    );
-  }
-  return (
-    <group>
-      {[0, 1, 2].map((i) => (
-        <Mesh key={i} position={[0, i * 0.8, 0]}>
-          <boxGeometry args={[2.4 - i * 0.4, 0.8, 1.2]} />
-          <meshStandardMaterial color={i === 2 ? TORII : STONE} flatShading />
-        </Mesh>
-      ))}
-    </group>
-  );
 }
 
 function Model({ id }: { id: ModelId }) {
   const { scene } = useGLTF(`/models/${id}.glb`);
-  // The Hero card flies as a page overlay once the transition starts; hide the in-scene copy then.
+  const model = useMemo(() => {
+    const clone = scene.clone(true);
+    toonify(clone);
+    return clone;
+  }, [scene]);
+
+  // Kaito: the card leaves his fingers as the Card Transition starts; the page card takes over from there.
   useFrame(() => {
     if (id !== 'kaito') return;
-    const card = scene.getObjectByName('Card');
-    if (card) card.visible = cardProgress.value < 0.02;
+    const card = model.getObjectByName('Card');
+    if (!card) return;
+    const p = Math.min(cardProgress.value / 0.06, 1);
+    card.visible = p < 1;
+    card.rotation.y = p * Math.PI * 0.6;
+    card.position.x = -0.285 - p * 0.12;
   });
-  return <primitive object={scene} />;
+  return <primitive object={model} />;
 }
 
-// A missing GLB makes useGLTF throw; swap in the primitive placeholder instead.
-class MissingModelBoundary extends Component<{ id: ModelId; children: ReactNode }, { failed: boolean }> {
+// A missing GLB makes useGLTF throw; show nothing rather than a broken scene (the still sits behind).
+class MissingModelBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
   render() {
-    return this.state.failed ? <Placeholder id={this.props.id} /> : this.props.children;
+    return this.state.failed ? null : this.props.children;
   }
 }
 
-function Spinner({ id, children, reducedMotion }: { id: ModelId; children: ReactNode; reducedMotion: boolean }) {
+// Scenes render on demand: a frame only when the pointer moves or the page scrolls (the Card Transition),
+// never in an idle loop. Keeps the main thread quiet and the battery cool.
+function Wake({ enabled }: { enabled: boolean }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    if (!enabled) return;
+    const wake = () => invalidate();
+    window.addEventListener('pointermove', wake, { passive: true });
+    window.addEventListener('scroll', wake, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', wake);
+      window.removeEventListener('scroll', wake);
+    };
+  }, [enabled, invalidate]);
+  return null;
+}
+
+// The figure leans a little toward the pointer, easing until it settles. No spins: these are figures on a print.
+function Lean({ children, reducedMotion, amount }: { children: ReactNode; reducedMotion: boolean; amount: number }) {
   const ref = useRef<Group>(null);
-  const t = useRef(0);
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (reducedMotion || !ref.current) return;
-    if (id === 'kaito') {
-      // Kaito faces the camera: sway instead of a full turn.
-      t.current += delta;
-      ref.current.rotation.y = Math.sin(t.current * 0.6) * 0.35;
-    } else {
-      ref.current.rotation.y += delta * 0.4;
-    }
+    const target = state.pointer.x * amount;
+    const diff = target - ref.current.rotation.y;
+    ref.current.rotation.y += diff * Math.min(delta * 4, 1);
+    if (Math.abs(diff) > 0.002) state.invalidate();
   });
   return <group ref={ref}>{children}</group>;
 }
 
+const framing: Record<ModelId, { camera: [number, number, number]; fov: number; margin: number; sway: number; ground: boolean }> = {
+  kaito: { camera: [-0.5, 1.55, 2.4], fov: 32, margin: 1.02, sway: 0.12, ground: false },
+  untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
+  temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
+  akai: { camera: [2.6, 1.4, 3.4], fov: 34, margin: 1.08, sway: 0.2, ground: true },
+};
+
 export default function ModelScene({ id, reducedMotion }: { id: ModelId; reducedMotion: boolean }) {
+  const f = framing[id];
   return (
     <Canvas
       dpr={[1, 1.5]}
-      frameloop={reducedMotion ? 'demand' : 'always'}
-      camera={{ position: [4, 3, 6], fov: 40 }}
+      frameloop="demand"
+      camera={{ position: f.camera, fov: f.fov }}
+      gl={{ alpha: true, antialias: true }}
       // Wheel and touch scrolling must always reach the page.
       style={{ touchAction: 'pan-y' }}
     >
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 8, 5]} intensity={1.6} />
+      <ambientLight intensity={1.1} />
+      <directionalLight position={[-3, 5, 4]} intensity={2.2} />
+      <Wake enabled={!reducedMotion} />
       <Suspense fallback={null}>
-        <Bounds fit observe margin={1.25}>
-          <Spinner id={id} reducedMotion={reducedMotion}>
-            <MissingModelBoundary id={id}>
+        <Bounds fit clip margin={f.margin} maxDuration={reducedMotion ? 0 : 0.6}>
+          <Lean reducedMotion={reducedMotion} amount={f.sway}>
+            <MissingModelBoundary>
               <Model id={id} />
             </MissingModelBoundary>
-          </Spinner>
+          </Lean>
         </Bounds>
+        {f.ground && <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={6} blur={2.4} far={2} color={INK} frames={1} />}
       </Suspense>
     </Canvas>
   );
