@@ -1,6 +1,7 @@
 ---
 import { getEntry } from 'astro:content';
 import VisualSlot from './VisualSlot.astro';
+import ModelSlot from './ModelSlot';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -32,7 +33,11 @@ const slotLabel = {
             <p class="mt-3 text-lg">{item.status}</p>
           </div>
           <div class={i % 2 === 0 ? 'md:order-2' : 'md:order-1'}>
-            <VisualSlot kind={item.visual} label={slotLabel[item.visual]} />
+            {item.visual === 'temple' ? (
+              <ModelSlot client:visible id="temple" alt="Low-poly 3D temple model, a Japanese pagoda" />
+            ) : (
+              <VisualSlot kind={item.visual} label={slotLabel[item.visual]} />
+            )}
           </div>
         </article>
       </>

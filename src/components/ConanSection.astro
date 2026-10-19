@@ -1,6 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
-import VisualSlot from './VisualSlot.astro';
+import ModelSlot from './ModelSlot';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -10,7 +10,7 @@ const { episode, label, title, total } = entry.data.currentlyWatching;
 <section id="conan" aria-labelledby="conan-heading" class="mx-auto max-w-5xl px-4 py-16">
   <h2 id="conan-heading" class="font-display text-3xl">Detective Conan</h2>
   <div class="mt-8 grid items-center gap-8 md:grid-cols-2">
-    <VisualSlot kind="scene" label="Placeholder for a future 3D Akai sniping scene" />
+    <ModelSlot client:visible id="akai" alt="Low-poly 3D Akai Shuichi sniping scene" />
     <div>
       <p class="text-xl" data-watching>
         Currently watching: Episode {episode} ({label})
