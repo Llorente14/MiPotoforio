@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Model preview coming soon">
+  <rect width="800" height="600" fill="none"/>
+  <path d="M400 150 L560 300 H240 Z" fill="#c8362b" opacity="0.7"/>
+  <rect x="280" y="300" width="240" height="140" fill="#8d6e63" opacity="0.7"/>
+  <text x="400" y="500" text-anchor="middle" font-family="serif" font-size="32" fill="#1f1a17">Model preview coming soon</text>
+</svg>
