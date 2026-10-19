@@ -4,7 +4,7 @@ const order = ['Dapute', 'AlterEgo Esport', 'LnFTI'];
 
 test('landing portfolio shows exactly 3 projects in featured order', async ({ page }) => {
   await page.goto('/');
-  const cards = page.locator('#portfolio ul > li').filter({ has: page.getByRole('heading', { level: 3 }) });
+  const cards = page.getByRole('list', { name: 'Featured projects' }).getByRole('listitem').filter({ has: page.getByRole('heading', { level: 3 }) });
   await expect(cards).toHaveCount(3);
   await expect(cards.getByRole('heading', { level: 3 })).toHaveText(order);
   await expect(page.getByRole('link', { name: 'View all projects' })).toHaveAttribute('href', '/projects/');

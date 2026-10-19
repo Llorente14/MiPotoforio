@@ -1,0 +1,48 @@
+import { expect, test } from '@playwright/test';
+
+test('landing shows 3 certificates and a working CV link', async ({ page, request }) => {
+  await page.goto('/');
+  const list = page.getByRole('list', { name: 'Featured certificates' });
+  await expect(list.getByRole('listitem')).toHaveCount(3);
+  await expect(page.getByRole('link', { name: 'View all certificates' })).toHaveAttribute('href', '/certificates/');
+  const cv = page.getByRole('link', { name: 'Download CV' });
+  await expect(cv).toHaveAttribute('href', '/Axel-Chrisdy-Sanjaya-CV.pdf');
+  await expect(cv).toHaveAttribute('download', 'Axel-Chrisdy-Sanjaya-CV.pdf');
+  const res = await request.get('/Axel-Chrisdy-Sanjaya-CV.pdf');
+  expect(res.status()).toBe(200);
+});
+
+test('list page shows all certificates', async ({ page }) => {
+  await page.goto('/certificates/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Certificates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Build an AI Agent/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /IBM|MongoDB|Red Hat|LPPI/ })).toHaveCount(8);
+});
+
+test('enlarged view opens by mouse, closes with Escape and returns focus', async ({ page }) => {
+  await page.goto('/certificates/');
+  const trigger = page.getByRole('button', { name: /Build an AI Agent/ });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: 'Build an AI Agent' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText(/IBM/)).toBeVisible();
+  await expect(dialog.getByRole('link', { name: 'Verify' })).toHaveAttribute(
+    'href',
+    'https://www.credly.com/badges/54cd8b99-4a9f-4ba6-bf3c-3d4d370f1fbd',
+  );
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test('enlarged view opens by keyboard and closes with the Close button', async ({ page }) => {
+  await page.goto('/certificates/');
+  const trigger = page.getByRole('button', { name: /MongoDB Basics for Students/ });
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
