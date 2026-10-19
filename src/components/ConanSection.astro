@@ -1,21 +1,37 @@
 ---
 import { getEntry } from 'astro:content';
-import ModelSlot from './ModelSlot';
 import SectionHead from './SectionHead.astro';
 import StripedDisc from './StripedDisc.astro';
+import { discMaskUrl } from '../lib/striped-disc';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
 const { funFact, episode, label, title, total } = entry.data.currentlyWatching;
+const mask = discMaskUrl(12);
 ---
 
 <section id="conan" aria-labelledby="conan-heading" class="relative overflow-hidden border-y border-rule py-24 md:py-32">
   <div class="mx-auto grid max-w-[90rem] items-center gap-10 px-4 md:grid-cols-12 md:px-8">
     <div class="relative md:col-span-7">
-      <StripedDisc class="conan__sun" bands={12} />
       <p class="conan__wait font-jp" aria-hidden="true" lang="ja">待って</p>
-      <div class="relative">
-        <ModelSlot client:visible id="akai" aspect="4 / 3" alt="Cel-shaded 3D Akai Shuichi sniping scene" />
+      <!-- Akai in the striped sun: the clip is cut to the disc, with a shu disc printed a little off-register behind it. -->
+      <div class="conan__disc">
+        <StripedDisc class="conan__sun" bands={12} />
+        <video
+          class="conan__video"
+          style={`--disc-mask: ${mask}`}
+          data-conan-video
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="/video/akai-poster.webp"
+          aria-label="Akai Shuichi turning toward the viewer, a looping clip from Detective Conan"
+        >
+          <source src="/video/akai.webm" type="video/webm" />
+          <source src="/video/akai.mp4" type="video/mp4" />
+        </video>
       </div>
     </div>
 
@@ -43,13 +59,25 @@ const { funFact, episode, label, title, total } = entry.data.currentlyWatching;
 </section>
 
 <style>
-  section :global(.conan__sun) {
+  .conan__disc {
+    position: relative;
+    width: min(82%, 34rem);
+    aspect-ratio: 1;
+    margin-inline: auto;
+  }
+  .conan__disc :global(.conan__sun) {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: min(78%, 34rem);
-    translate: -50% -56%;
+    inset: 0;
+    translate: 3% 2.5%;
     color: var(--color-torii);
+  }
+  .conan__video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-mask: var(--disc-mask) center / contain no-repeat;
+    mask: var(--disc-mask) center / contain no-repeat;
   }
   .conan__wait {
     position: absolute;
@@ -70,3 +98,20 @@ const { funFact, episode, label, title, total } = entry.data.currentlyWatching;
     line-height: 0.8;
   }
 </style>
+
+<script>
+  // Reduced motion: hold the first frame instead of looping.
+  const video = document.querySelector<HTMLVideoElement>('[data-conan-video]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function sync() {
+    if (!video) return;
+    if (reduced.matches) {
+      video.pause();
+      video.currentTime = 0;
+    } else {
+      void video.play().catch(() => {});
+    }
+  }
+  reduced.addEventListener('change', sync);
+  sync();
+</script>

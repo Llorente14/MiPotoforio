@@ -1,6 +1,8 @@
 ---
 // The site's signature motif: a solid disc whose lower half breaks into horizontal bands,
 // like a woodblock sun printed through a slatted screen. Colour follows `currentColor`.
+import { discBands } from '../lib/striped-disc';
+
 interface Props {
   class?: string;
   // Number of bands in the lower half.
@@ -10,15 +12,7 @@ interface Props {
 const { class: className, bands = 10 } = Astro.props;
 const id = `disc-${Math.random().toString(36).slice(2, 8)}`;
 
-// Bands get thinner and gaps wider toward the bottom edge.
-const rects: { y: number; h: number }[] = [{ y: 0, h: 104 }];
-let y = 108;
-for (let i = 0; i < bands; i++) {
-  const t = i / bands;
-  const h = 9 * (1 - t) + 1.5;
-  rects.push({ y, h });
-  y += h + 2.5 + 6 * t;
-}
+const rects = discBands(bands);
 ---
 
 <svg viewBox="0 0 200 200" class={className} aria-hidden="true" fill="currentColor">

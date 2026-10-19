@@ -41,5 +41,9 @@ test('fun fact section shows the Conan fact, the episode from profile content an
   await expect(section.getByText(funFact)).toBeVisible();
   await expect(section.getByText(`Currently watching: Episode ${episode} (${label})`)).toBeVisible();
   await expect(section.getByText(/Gosho Aoyama \/ TMS; fan-made art/)).toBeVisible();
-  await expect(section.getByRole('img', { name: /Akai Shuichi sniping scene/ })).toBeVisible();
+  const video = section.locator('video[data-conan-video]');
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute('aria-label', /Akai Shuichi/);
+  await expect(video).toHaveAttribute('loop', '');
+  expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(true);
 });
