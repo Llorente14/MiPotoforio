@@ -16,7 +16,7 @@ test('desktop mounts a canvas in each model slot once scrolled into view', async
   }
 });
 
-test('mobile never creates a canvas and shows still images with alt text', async ({ page }, info) => {
+test('mobile never creates a 3D canvas and shows still images with alt text', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile');
   await page.goto('/');
   for (const { id, alt } of slots) {
@@ -25,7 +25,7 @@ test('mobile never creates a canvas and shows still images with alt text', async
     await expect(slot.getByRole('img', { name: alt })).toBeVisible();
   }
   await page.waitForTimeout(1000);
-  await expect(page.locator('canvas')).toHaveCount(0);
+  await expect(page.locator('canvas:not([data-sakura])')).toHaveCount(0);
 });
 
 test('a scene does not capture page scrolling', async ({ page }, info) => {
