@@ -75,7 +75,7 @@ cape.modifiers.new("Smooth", "SUBSURF").levels = 1
 # ------------------------------------------------------------------ neck and head
 loft("Neck", [((0, 0.0, 1.43), 0.045, 0.045), ((0, -0.005, 1.53), 0.042, 0.042)], SKIN, n=16)
 HEAD = (0.0, -0.01, 1.64)
-ball(HEAD, 0.112, SKIN, scale=(0.95, 0.98, 1.06), segs=32)
+ball(HEAD, 0.112, SKIN, scale=(0.95, 0.98, 1.06), segs=28)
 ball((0.0, -0.05, 1.575), 0.072, SKIN, scale=(0.95, 0.9, 1.0), segs=24)  # jaw, tapering to an anime chin
 for sx in (-1, 1):
     ball((0.105 * sx, -0.005, 1.63), 0.022, SKIN, scale=(0.5, 1.0, 1.3))  # ears

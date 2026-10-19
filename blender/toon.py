@@ -133,12 +133,13 @@ def loft(name, rings, material, n=24, caps=(True, True), sub=1):
     return subsurf(o, sub) if sub else o
 
 
-def strand(points, radius, material, taper=(1.0, 0.0), res=3):
+def strand(points, radius, material, taper=(1.0, 0.0), res=2):
     """Tapered tube along a smooth curve through points: hair locks, cords, folds."""
     cu = bpy.data.curves.new("Strand", "CURVE")
     cu.dimensions = "3D"
     cu.bevel_depth = radius
     cu.bevel_resolution = res
+    cu.resolution_u = 5  # enough for a smooth lock; the default 12 triples the polycount
     cu.use_fill_caps = True
     sp = cu.splines.new("NURBS")
     sp.points.add(len(points) - 1)
