@@ -10,9 +10,9 @@ const paletteItems: PaletteItem[] = [
   ...[
     ['About', 'about'],
     ['Current Learning', 'learning'],
-    ['Fun fact', 'conan'],
     ['Portfolio', 'portfolio'],
     ['GitHub Activity', 'github'],
+    ['Fun fact', 'conan'],
   ].map(([label, id]): PaletteItem => ({ label, group: 'Section', url: `/#${id}` })),
   { label: 'All projects', group: 'Project', url: '/projects/' },
   ...(await getCollection('projects'))
