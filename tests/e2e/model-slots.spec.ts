@@ -3,7 +3,6 @@ import { expect, test } from '@playwright/test';
 const slots = [
   { id: 'untar', alt: /UNTAR Building 2/ },
   { id: 'temple', alt: /3D temple model/ },
-  { id: 'akai', alt: /Akai Shuichi sniping scene/ },
 ];
 
 test('desktop mounts a canvas in each model slot once scrolled into view', async ({ page }, info) => {

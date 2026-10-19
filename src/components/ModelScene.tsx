@@ -20,7 +20,7 @@ import { cardProgress } from '../lib/card-progress';
 
 useGLTF.setDecoderPath('/draco/');
 
-export type ModelId = 'untar' | 'temple' | 'akai' | 'kaito';
+export type ModelId = 'untar' | 'temple' | 'kaito';
 
 const INK = '#17140f';
 
@@ -166,7 +166,6 @@ const framing: Record<
   kaito: { camera: [-0.45, 0.62, 2.6], fov: 30, margin: 1.02, sway: 0.12, ground: false },
   untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.14, sway: 0, ground: true, light: 0.7, swing: 135 },
   temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
-  akai: { camera: [2.6, 1.4, 3.4], fov: 34, margin: 1.08, sway: 0.2, ground: true },
 };
 
 export default function ModelScene({ id, reducedMotion }: { id: ModelId; reducedMotion: boolean }) {
