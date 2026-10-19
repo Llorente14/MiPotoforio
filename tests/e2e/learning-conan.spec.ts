@@ -40,5 +40,5 @@ test('conan section shows the episode from profile content and the disclaimer', 
   const { episode, label } = profile.currentlyWatching;
   await expect(section.getByText(`Currently watching: Episode ${episode} (${label})`)).toBeVisible();
   await expect(section.getByText(/Gosho Aoyama \/ TMS; fan-made low-poly art/)).toBeVisible();
-  await expect(section.getByRole('img', { name: /Akai sniping scene/ })).toBeVisible();
+  await expect(section.getByRole('img', { name: /Akai Shuichi sniping scene/ })).toBeVisible();
 });

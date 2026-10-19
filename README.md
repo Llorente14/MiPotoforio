@@ -91,6 +91,13 @@ Each script writes:
 
 You can also edit a model by hand in Blender. Export it with the same file name and node names, and keep Draco compression on. Re-running the script overwrites manual edits.
 
+### Adding a model to the site
+
+1. Drop `<id>.glb` into `public/models/` and `<id>.webp` into `public/renders/`.
+2. Place `<ModelSlot client:visible id="<id>" alt="..." />` where it should appear (`src/components/ModelSlot.tsx`). Add the id to `ModelId` in `src/components/ModelScene.tsx` if it is new.
+
+On desktop the slot loads the GLB (Draco decoder is self-hosted in `public/draco/`) in a lazy React Three Fiber scene. On phones and tablets (`max-width: 767px` or a coarse pointer), or without WebGL, it shows the still render and never starts WebGL. A missing GLB falls back to simple primitive shapes, and a missing WebP falls back to `public/renders/placeholder.svg`.
+
 ## Deployment
 
 The site deploys to Vercel. Every push to `main` triggers a deploy, and a daily rebuild keeps the GitHub heatmap fresh.
