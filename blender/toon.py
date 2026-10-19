@@ -158,6 +158,44 @@ def strand(points, radius, material, taper=(1.0, 0.0), res=2):
     return keep(cur(), material)
 
 
+def decal(source, image, x_range, z_range, push=0.0012, facing=-0.2):
+    """Paint a transparent texture onto the front of `source` (e.g. a face onto a head).
+
+    Copies the faces of `source` that face the camera (normal.y < facing), pushes them out a hair,
+    and maps the image straight on from the front: x_range -> u, z_range -> v.
+    """
+    bpy.ops.object.select_all(action="DESELECT")
+    source.select_set(True)
+    bpy.context.view_layer.objects.active = source
+    for mod in list(source.modifiers):
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    me = source.data.copy()
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.normal_update()
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.normal.y > facing], context="FACES")
+    for v in bm.verts:
+        v.co += v.normal * push
+    uv = bm.loops.layers.uv.new("Decal")
+    for f in bm.faces:
+        for loop in f.loops:
+            x, _, z = loop.vert.co
+            loop[uv].uv = ((x - x_range[0]) / (x_range[1] - x_range[0]), (z - z_range[0]) / (z_range[1] - z_range[0]))
+    bm.to_mesh(me)
+    bm.free()
+    me.materials.clear()
+    o = bpy.data.objects.new("Decal", me)
+    bpy.context.collection.objects.link(o)
+    m = mat("Decal" + os.path.basename(image), "#ffffff", image=image)
+    m["uv"] = "Decal"  # joined meshes carry several UV layers; the decal must sample its own
+    tex = next(n for n in m.node_tree.nodes if n.type == "TEX_IMAGE")
+    uvmap = m.node_tree.nodes.new("ShaderNodeUVMap")
+    uvmap.uv_map = "Decal"
+    m.node_tree.links.new(uvmap.outputs[0], tex.inputs[0])
+    return keep(o, m)
+
+
 def join(name, smooth_angle=None):
     """Join every object made since the last join into one mesh with baked transforms.
 
@@ -192,7 +230,7 @@ def _toon_nodes(m):
     nt = m.node_tree
     tex = next((n for n in nt.nodes if n.type == "TEX_IMAGE"), None)
     for n in list(nt.nodes):
-        if tex is None or n.name != tex.name:
+        if tex is None or n.name != tex.name:  # the UV Map node is re-made below
             nt.nodes.remove(n)
     diffuse = nt.nodes.new("ShaderNodeBsdfDiffuse")
     to_rgb = nt.nodes.new("ShaderNodeShaderToRGB")
@@ -214,6 +252,10 @@ def _toon_nodes(m):
     nt.links.new(ramp.outputs[0], mix.inputs[6])
     if tex:
         nt.links.new(tex.outputs[0], mix.inputs[7])
+        if m.get("uv"):
+            uvmap = nt.nodes.new("ShaderNodeUVMap")
+            uvmap.uv_map = m["uv"]
+            nt.links.new(uvmap.outputs[0], tex.inputs[0])
     nt.links.new(mix.outputs[2], emit.inputs[0])
     if tex:
         transparent = nt.nodes.new("ShaderNodeBsdfTransparent")

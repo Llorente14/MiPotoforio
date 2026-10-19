@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240">
+  <!-- Face decal for blender/kaito.py: projected straight onto the front of the head.
+       1 unit = 1 mm. x = 110 + 1000 * model x; y = 1000 * (1.76 - model z). Transparent elsewhere. -->
+  <defs>
+    <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d2f63" />
+      <stop offset="0.55" stop-color="#3d63b5" />
+      <stop offset="1" stop-color="#7ea3e0" />
+    </linearGradient>
+    <g id="eye">
+      <!-- sclera -->
+      <path d="M-17 2 Q-14 -11 0 -12 Q14 -11 18 -1 Q12 12 0 13 Q-12 12 -17 2 Z" fill="#ffffff" />
+      <!-- iris, pupil, highlights -->
+      <ellipse cx="1.5" cy="1.5" rx="9.5" ry="11.5" fill="url(#iris)" />
+      <ellipse cx="1.5" cy="2.5" rx="4.2" ry="6" fill="#0f1730" />
+      <ellipse cx="-2.5" cy="-4" rx="3" ry="3.6" fill="#ffffff" />
+      <circle cx="5.5" cy="7" r="1.6" fill="#ffffff" />
+      <!-- heavy upper lash line with a flick at the outer corner, thin lower lash -->
+      <path d="M-19 1 Q-15 -14 1 -14.5 Q15 -14 21 -3 L24 -6 L20 2 Q14 -9 1 -10 Q-12 -10 -16 3 Z" fill="#141210" />
+      <path d="M-12 11 Q0 15 13 9" fill="none" stroke="#141210" stroke-width="1.4" stroke-linecap="round" />
+    </g>
+  </defs>
+
+  <!-- eyes: his right (screen left, under the monocle) and his left -->
+  <use href="#eye" transform="translate(68 115) scale(-1 1)" />
+  <use href="#eye" transform="translate(152 115)" />
+
+  <!-- brows: confident, slightly raised on his left -->
+  <path d="M46 92 Q66 82 88 88 L88 92 Q67 87 47 96 Z" fill="#2a221e" />
+  <path d="M132 87 Q154 78 175 88 L174 92 Q153 83 132 91 Z" fill="#2a221e" />
+
+  <!-- nose: one shadow stroke -->
+  <path d="M114 138 L118 152 L112 154" fill="none" stroke="#b98e76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- the smirk, higher on his left -->
+  <path d="M94 186 Q112 192 132 180" fill="none" stroke="#5a2f26" stroke-width="2.6" stroke-linecap="round" />
+  <path d="M131 180 l4 -3" fill="none" stroke="#5a2f26" stroke-width="2" stroke-linecap="round" />
+
+  <!-- a touch of blush -->
+  <ellipse cx="62" cy="152" rx="12" ry="4" fill="#e79a8c" opacity="0.35" />
+  <ellipse cx="158" cy="152" rx="12" ry="4" fill="#e79a8c" opacity="0.35" />
+</svg>
