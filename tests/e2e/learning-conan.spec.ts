@@ -33,11 +33,12 @@ test('learning panels zigzag on desktop and stack on mobile', async ({ page }, i
   }
 });
 
-test('conan section shows the episode from profile content and the disclaimer', async ({ page }) => {
+test('fun fact section shows the Conan fact, the episode from profile content and the disclaimer', async ({ page }) => {
   await page.goto('/');
   const section = page.locator('#conan');
-  await expect(section.getByRole('heading', { level: 2, name: 'Detective Conan' })).toBeVisible();
-  const { episode, label } = profile.currentlyWatching;
+  await expect(section.getByRole('heading', { level: 2, name: 'Fun fact' })).toBeVisible();
+  const { funFact, episode, label } = profile.currentlyWatching;
+  await expect(section.getByText(funFact)).toBeVisible();
   await expect(section.getByText(`Currently watching: Episode ${episode} (${label})`)).toBeVisible();
   await expect(section.getByText(/Gosho Aoyama \/ TMS; fan-made art/)).toBeVisible();
   await expect(section.getByRole('img', { name: /Akai Shuichi sniping scene/ })).toBeVisible();

@@ -27,6 +27,8 @@ const profile = defineCollection({
       }),
     ),
     currentlyWatching: z.object({
+      // One-line fun fact shown above the episode counter.
+      funFact: z.string().min(1),
       episode: z.number().int().positive(),
       label: z.string().min(1),
       title: z.string().optional(),

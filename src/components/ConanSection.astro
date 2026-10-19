@@ -6,7 +6,7 @@ import StripedDisc from './StripedDisc.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
-const { episode, label, title, total } = entry.data.currentlyWatching;
+const { funFact, episode, label, title, total } = entry.data.currentlyWatching;
 ---
 
 <section id="conan" aria-labelledby="conan-heading" class="relative overflow-hidden border-y border-rule py-24 md:py-32">
@@ -20,8 +20,9 @@ const { episode, label, title, total } = entry.data.currentlyWatching;
     </div>
 
     <div class="md:col-span-5">
-      <SectionHead number="04" kanji="探" label="Watching" id="conan-heading" title="Detective Conan" />
-      <p class="conan__episode display mt-10" aria-hidden="true">
+      <SectionHead number="04" kanji="探" label="Off the clock" id="conan-heading" title="Fun fact" />
+      <p class="conan__fact mt-8">{funFact}</p>
+      <p class="conan__episode display mt-8" aria-hidden="true">
         <span class="label block font-semibold opacity-80">Episode</span>{episode}
       </p>
       <p class="mt-6 text-lg" data-watching>Currently watching: Episode {episode} ({label})</p>
@@ -57,6 +58,11 @@ const { episode, label, title, total } = entry.data.currentlyWatching;
     font-size: clamp(2.5rem, 5vw, 4.5rem);
     line-height: 1;
     opacity: 0.85;
+  }
+  .conan__fact {
+    font-family: var(--font-jp);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    line-height: 1.3;
   }
   .conan__episode {
     font-size: clamp(6rem, 16vw, 13rem);
