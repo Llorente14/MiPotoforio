@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Self-hosted fonts: no third-party requests on the critical path. */
+@import "@fontsource-variable/fraunces/wght.css";
+@import "@fontsource-variable/inter/wght.css";
+
 /* Design tokens. Day (washi) palette is the default; Sky Theme switches via [data-sky]. */
 :root {
   --color-paper: #f6efe0;
@@ -16,9 +20,9 @@
   --sky-stars: 0;
   --sky-clouds: 1;
 
-  --font-display: "Fraunces", "Shippori Mincho", serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-jp: "Shippori Mincho", serif;
+  --font-display: "Fraunces Variable", "Shippori Mincho", serif;
+  --font-body: "Inter Variable", system-ui, sans-serif;
+  --font-jp: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
 
   --text-sm: 0.875rem;
   --text-base: 1rem;

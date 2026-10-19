@@ -8,9 +8,11 @@ const ModelScene = lazy(() => import('./ModelScene'));
 interface Props {
   id: ModelId;
   alt: string;
+  // Above-the-fold slot: load its still immediately and at high priority.
+  priority?: boolean;
 }
 
-export default function ModelSlot({ id, alt }: Props) {
+export default function ModelSlot({ id, alt, priority = false }: Props) {
   const [mode, setMode] = useState<{ allow3d: boolean; reducedMotion: boolean }>({
     allow3d: false,
     reducedMotion: false,
@@ -24,7 +26,8 @@ export default function ModelSlot({ id, alt }: Props) {
       alt={alt}
       width={800}
       height={600}
-      loading="lazy"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : 'auto'}
       onError={(e) => {
         // No render shipped for this id yet: use the generic placeholder.
         const img = e.currentTarget;
