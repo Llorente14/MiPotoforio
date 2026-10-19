@@ -1,0 +1,7 @@
+#!/bin/sh
+# Axel is the only author of this repo. Reject AI co-author / attribution lines.
+if grep -qiE '^co-authored-by:.*(claude|anthropic|noreply@anthropic\.com)|generated with \[?claude' "$1"; then
+  echo "commit-msg: AI attribution lines are not allowed in this repo (see AGENTS.md > Git rules)." >&2
+  echo "Remove the Co-Authored-By / 'Generated with Claude' line and commit again." >&2
+  exit 1
+fi
