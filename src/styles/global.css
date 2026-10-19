@@ -7,6 +7,15 @@
   --color-torii: #c8362b;
   --color-sakura: #f4b6c2;
 
+  /* Sky gradient stops (top to bottom) and objects, used by SkyBackground. */
+  --sky-top: #8fc7ef;
+  --sky-bottom: #f6efe0;
+  --sky-body: #ffd95a;
+  --sky-body-glow: rgb(255 217 90 / 0.45);
+  --sky-cloud: rgb(255 255 255 / 0.85);
+  --sky-stars: 0;
+  --sky-clouds: 1;
+
   --font-display: "Fraunces", "Shippori Mincho", serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-jp: "Shippori Mincho", serif;
@@ -25,6 +34,33 @@
   --space-5: 2.5rem;
   --space-6: 4rem;
   --space-7: 6rem;
+}
+
+/* Sky Theme: <html data-sky> switches the page; the Hero sets data-sky="night" on itself to stay Night. */
+[data-sky="dusk"] {
+  --color-paper: #3a2a45;
+  --color-ink: #fbe7d6;
+  --color-torii: #ff7b5c;
+  --sky-top: #3b2d5e;
+  --sky-bottom: #f08a5d;
+  --sky-body: #ffb36b;
+  --sky-body-glow: rgb(255 140 90 / 0.5);
+  --sky-cloud: rgb(255 170 140 / 0.45);
+  --sky-stars: 0.35;
+  --sky-clouds: 0.8;
+}
+
+[data-sky="night"] {
+  --color-paper: #0f1430;
+  --color-ink: #e9ecff;
+  --color-torii: #ff6a5c;
+  --sky-top: #05081c;
+  --sky-bottom: #1b2350;
+  --sky-body: #eef1ff;
+  --sky-body-glow: rgb(200 210 255 / 0.35);
+  --sky-cloud: rgb(255 255 255 / 0);
+  --sky-stars: 1;
+  --sky-clouds: 0;
 }
 
 @theme inline {

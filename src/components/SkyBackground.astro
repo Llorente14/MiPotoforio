@@ -1,0 +1,59 @@
+---
+// Decorative sky layer: gradient + sun/moon + stars + clouds, pure CSS/SVG (no WebGL).
+const stars = Array.from({ length: 40 }, (_, i) => ({
+  x: (i * 37 + 11) % 100,
+  y: (i * 53 + 7) % 60,
+  r: 0.15 + ((i * 7) % 5) * 0.06,
+}));
+---
+
+<div class="sky" aria-hidden="true">
+  <div class="sky__body"></div>
+  <svg class="sky__stars" viewBox="0 0 100 100" preserveAspectRatio="none">
+    {stars.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#fff" />)}
+  </svg>
+  <div class="sky__cloud" style="top: 14%; left: 8%; width: 12rem"></div>
+  <div class="sky__cloud" style="top: 26%; left: 62%; width: 16rem"></div>
+  <div class="sky__cloud" style="top: 8%; left: 40%; width: 9rem"></div>
+</div>
+
+<style>
+  .sky {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+  }
+  .sky__body {
+    position: absolute;
+    top: 12%;
+    right: 14%;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: var(--sky-body);
+    box-shadow: 0 0 4rem 1.5rem var(--sky-body-glow);
+  }
+  .sky__stars {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: var(--sky-stars);
+  }
+  .sky__cloud {
+    position: absolute;
+    height: 3rem;
+    border-radius: 999px;
+    background: var(--sky-cloud);
+    opacity: var(--sky-clouds);
+    filter: blur(2px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .sky__stars,
+    .sky__cloud {
+      transition: opacity 0.4s ease;
+    }
+  }
+</style>
