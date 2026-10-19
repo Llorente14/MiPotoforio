@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import ScrollToTop from '../components/ScrollToTop.astro';
+import SakuraParticles from '../components/SakuraParticles';
 import SkyBackground from '../components/SkyBackground.astro';
 
 interface Props {
@@ -40,6 +41,7 @@ const { title, description } = Astro.props;
   </head>
   <body class="text-ink outline-none" tabindex="-1">
     <SkyBackground />
+    <SakuraParticles client:idle />
     <Navbar />
     <a
       href="#main"
