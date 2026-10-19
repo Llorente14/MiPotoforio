@@ -1,0 +1,50 @@
+---
+const themes = [
+  { id: 'day', label: 'Day' },
+  { id: 'dusk', label: 'Dusk' },
+  { id: 'night', label: 'Night' },
+] as const;
+---
+
+<header class="fixed inset-x-0 top-0 z-40 flex justify-end px-4 py-3">
+  <nav aria-label="Main">
+    <div role="group" aria-label="Sky theme" class="flex gap-1 rounded-full bg-paper/80 p-1 backdrop-blur">
+      {
+        themes.map((t) => (
+          <button
+            type="button"
+            data-sky-option={t.id}
+            aria-pressed={t.id === 'day' ? 'true' : 'false'}
+            class="rounded-full px-3 py-1 text-sm aria-pressed:bg-torii aria-pressed:text-paper"
+          >
+            {t.label}
+          </button>
+        ))
+      }
+    </div>
+  </nav>
+</header>
+
+<script>
+  type Sky = 'day' | 'dusk' | 'night';
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-sky-option]');
+
+  function sync() {
+    const current = document.documentElement.dataset.sky;
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skyOption === current)));
+  }
+
+  buttons.forEach((b) =>
+    b.addEventListener('click', () => {
+      const sky = b.dataset.skyOption as Sky;
+      document.documentElement.dataset.sky = sky;
+      try {
+        localStorage.setItem('sky-theme', sky);
+      } catch {
+        // Storage unavailable: the theme still applies for this page view.
+      }
+      sync();
+    }),
+  );
+  sync();
+</script>

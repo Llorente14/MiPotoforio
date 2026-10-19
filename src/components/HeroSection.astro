@@ -1,0 +1,19 @@
+---
+import { getEntry } from 'astro:content';
+
+const entry = await getEntry('profile', 'profile');
+if (!entry) throw new Error('Profile content entry "profile" is missing');
+const { name } = entry.data;
+---
+
+<!-- data-sky="night" re-scopes the tokens so the Hero stays Night under every Sky Theme. -->
+<section
+  id="hero"
+  data-sky="night"
+  aria-labelledby="hero-heading"
+  class="relative flex min-h-screen flex-col items-center justify-center bg-paper px-4 text-center text-ink"
+>
+  <h1 id="hero-heading" class="font-display text-3xl">{name}</h1>
+  <p class="mt-4 text-xl">Informatics Engineering student building things for the web.</p>
+  <p class="mt-2 font-jp" aria-hidden="true">夜空</p>
+</section>
