@@ -1,48 +1,91 @@
 ---
 import { getCollection } from 'astro:content';
+import CertSlip from './CertSlip.astro';
 import ProjectCard from './ProjectCard.astro';
+import SectionHead from './SectionHead.astro';
 
 const featured = (await getCollection('projects'))
   .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
   .slice(0, 3);
 
-const fmt = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 const certificates = (await getCollection('certificates'))
   .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
   .slice(0, 3);
 ---
 
-<section id="portfolio" aria-labelledby="portfolio-heading" class="mx-auto max-w-5xl px-4 py-16">
-  <h2 id="portfolio-heading" class="font-display text-3xl">Portfolio</h2>
-  <ul aria-label="Featured projects" class="mt-6 grid gap-6 md:grid-cols-3">
-    {featured.map((project) => <ProjectCard project={project} />)}
-  </ul>
-  <p class="mt-6"><a class="underline" href="/projects/">View all projects</a></p>
+<section id="portfolio" aria-labelledby="portfolio-heading" class="mx-auto max-w-[90rem] px-4 py-24 md:px-8 md:py-36">
+  <div class="flex flex-wrap items-end justify-between gap-6">
+    <SectionHead number="05" kanji="札" label="The hand" id="portfolio-heading" title="Portfolio" />
+    <a class="label label-link" href="/projects/">View all projects</a>
+  </div>
 
-  <h3 class="mt-12 font-display text-2xl">Certificates</h3>
-  <ul aria-label="Featured certificates" class="mt-6 grid gap-6 md:grid-cols-3">
-    {
-      certificates.map((c) => (
-        <li class="overflow-hidden rounded-lg bg-paper/80 shadow backdrop-blur">
-          <a href="/certificates/" class="block h-full">
-            <img src={c.data.image} alt={c.data.imageAlt} width="1200" height="850" loading="lazy" class="aspect-[1200/850] w-full object-cover" />
-            <span class="block p-4">
-              <span class="block font-display text-lg">{c.data.title}</span>
-              <span class="mt-1 block text-sm">{c.data.issuer} · {fmt.format(c.data.date)}</span>
-            </span>
-          </a>
-        </li>
-      ))
-    }
+  <!-- Desktop: the projects are dealt as a fanned hand; hover draws a card. Phones: a plain stack. -->
+  <ul aria-label="Featured projects" class="hand mt-16">
+    {featured.map((project, i) => <ProjectCard project={project} index={i} />)}
   </ul>
-  <p class="mt-6 flex flex-wrap items-center gap-6">
-    <a class="underline" href="/certificates/">View all certificates</a>
-    <a
-      class="rounded bg-torii px-4 py-1 text-paper"
-      href="/Axel-Chrisdy-Sanjaya-CV.pdf"
-      download="Axel-Chrisdy-Sanjaya-CV.pdf"
-    >
-      Download CV
-    </a>
-  </p>
+
+  <div class="mt-28 grid gap-10 md:grid-cols-12">
+    <div class="md:col-span-4">
+      <h3 class="display text-[clamp(2.25rem,4vw,3.5rem)]">Certificates</h3>
+      <p class="mt-4 max-w-xs opacity-80">Courses and credentials, each with a link to verify it.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-6">
+        <a class="cv label" href="/Axel-Chrisdy-Sanjaya-CV.pdf" download="Axel-Chrisdy-Sanjaya-CV.pdf">Download CV</a>
+        <a class="label label-link" href="/certificates/">View all certificates</a>
+      </div>
+    </div>
+    <ul aria-label="Featured certificates" class="grid gap-5 md:col-span-8 lg:grid-cols-2">
+      {
+        certificates.map((c, i) => (
+          <li>
+            <a href="/certificates/" class="block" aria-label={`${c.data.title}, ${c.data.issuer}`}>
+              <CertSlip cert={c} index={i} />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </section>
+
+<style>
+  .hand {
+    display: grid;
+    gap: 2rem;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+  @media (min-width: 900px) {
+    .hand {
+      display: flex;
+      justify-content: center;
+      max-width: none;
+      gap: 0;
+      padding-top: 2rem;
+    }
+    .hand > :global(li) {
+      width: clamp(17rem, 24vw, 22rem);
+      margin-left: -3.5rem;
+      transform-origin: 50% 120%;
+      transform: rotate(calc((var(--i) - 1) * 8deg)) translateY(calc(var(--i) * (2 - var(--i)) * -1.5rem + 1.5rem));
+      transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .hand > :global(li:first-child) {
+      margin-left: 0;
+    }
+    .hand > :global(li:hover),
+    .hand > :global(li:focus-within) {
+      z-index: 2;
+      transform: rotate(calc((var(--i) - 1) * 3deg)) translateY(-2.5rem);
+    }
+  }
+  .cv {
+    display: inline-block;
+    padding: 0.85rem 1.3rem;
+    background: var(--color-torii);
+    color: var(--color-paper);
+    transition: transform 0.2s ease;
+  }
+  .cv:hover {
+    transform: translateY(-2px);
+  }
+</style>

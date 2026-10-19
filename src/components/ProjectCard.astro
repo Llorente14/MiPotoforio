@@ -1,23 +1,118 @@
 ---
+// A project as a playing card from Axel's own deck: rank and suit in the corners, the cover in a
+// framed window, the stack set as small print along the bottom.
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   project: CollectionEntry<'projects'>;
+  index: number;
 }
 
-const { project } = Astro.props;
-const { title, summary, stack, cover, coverAlt } = project.data;
+const { project, index } = Astro.props;
+const { title, summary, stack, cover, coverAlt, date } = project.data;
+const suits = ['♠', '♥', '♣', '♦'];
+const suit = suits[index % suits.length];
+const red = suit === '♥' || suit === '♦';
+const rank = String(index + 1).padStart(2, '0');
+const year = date.getUTCFullYear();
 ---
 
-<li class="overflow-hidden rounded-lg bg-paper/80 shadow backdrop-blur">
-  <a href={`/projects/${project.id}/`} class="block h-full">
-    <img src={cover} alt={coverAlt} width="1200" height="630" loading="lazy" class="aspect-[1200/630] w-full object-cover" />
-    <div class="p-4">
-      <h3 class="font-display text-xl">{title}</h3>
-      <p class="mt-2">{summary}</p>
-      <ul class="mt-3 flex flex-wrap gap-2 text-sm" aria-label={`${title} tech stack`}>
-        {stack.map((s) => <li class="rounded-full bg-torii/15 px-2 py-0.5">{s}</li>)}
+<li class="pcard" style={`--i: ${index}`}>
+  <a href={`/projects/${project.id}/`} class="pcard__face" aria-label={`${title}: ${summary}`}>
+    <span class:list={['pcard__index', red && 'pcard__index--red']} aria-hidden="true">{rank}<br />{suit}</span>
+    <span class:list={['pcard__index pcard__index--end', red && 'pcard__index--red']} aria-hidden="true">{rank}<br />{suit}</span>
+
+    <div class="pcard__window">
+      <img src={cover} alt={coverAlt} width="1200" height="630" loading="lazy" />
+    </div>
+
+    <div class="pcard__body">
+      <span class="label flex justify-between opacity-75"><span>Project {rank}</span><span>{year}</span></span>
+      <h3 class="display mt-2 text-[clamp(1.9rem,2.6vw,2.6rem)]">{title}</h3>
+      <p class="mt-2 text-[0.95rem] leading-snug opacity-80">{summary}</p>
+      <ul class="label mt-4 flex flex-wrap gap-x-3 gap-y-1 opacity-75" aria-label={`${title} tech stack`}>
+        {stack.map((s) => <li>{s}</li>)}
       </ul>
     </div>
   </a>
 </li>
+
+<style>
+  .pcard {
+    list-style: none;
+  }
+  .pcard__face {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 2.2rem 1.6rem 2.6rem;
+    border-radius: 0.9rem;
+    background: #f2ebd9;
+    color: #17140f;
+    box-shadow:
+      inset 0 0 0 1.5px #17140f,
+      inset 0 0 0 7px #f2ebd9,
+      inset 0 0 0 8px #17140f,
+      0 1.5rem 2.5rem -1.5rem rgb(23 20 15 / 0.55);
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.45s ease;
+  }
+  .pcard__face:hover,
+  .pcard__face:focus-visible {
+    box-shadow:
+      inset 0 0 0 1.5px #17140f,
+      inset 0 0 0 7px #f2ebd9,
+      inset 0 0 0 8px #17140f,
+      0 2.5rem 3.5rem -1.5rem rgb(23 20 15 / 0.6);
+  }
+  .pcard__index {
+    position: absolute;
+    top: 0.85rem;
+    left: 1.05rem;
+    font-family: var(--font-display);
+    font-stretch: 62%;
+    font-weight: 800;
+    font-size: 1.3rem;
+    line-height: 0.95;
+    text-align: center;
+  }
+  @media (min-width: 900px) {
+    .pcard__face {
+      aspect-ratio: 5 / 7;
+    }
+  }
+  .pcard__index--red {
+    color: #b2301b;
+  }
+  .pcard__index--end {
+    top: auto;
+    left: auto;
+    right: 1.05rem;
+    bottom: 0.85rem;
+    transform: rotate(180deg);
+  }
+  .pcard__window {
+    display: block;
+    margin: 0.4rem 0.6rem 0;
+    border: 1.5px solid #17140f;
+    overflow: hidden;
+    aspect-ratio: 1200 / 630;
+    background: #17140f;
+  }
+  .pcard__window img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85) contrast(1.05);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .pcard__face:hover .pcard__window img {
+    transform: scale(1.05);
+  }
+  .pcard__body {
+    display: block;
+    margin: 1.2rem 0.6rem 0;
+  }
+</style>

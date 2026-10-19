@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 850" role="img" aria-label="Placeholder certificate image">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a31f1f"/><stop offset="1" stop-color="#f5b5a8"/></linearGradient></defs>
-  <rect width="1200" height="850" fill="url(#g)"/>
-  <rect x="40" y="40" width="1120" height="770" fill="none" stroke="#ffffff" stroke-width="4"/>
-  <text x="600" y="330" text-anchor="middle" font-family="serif" font-size="40" fill="#ffffff">Certificate of Completion</text>
-  <text x="600" y="430" text-anchor="middle" font-family="serif" font-size="44" fill="#ffffff">Red Hat System Administration I (RH1...</text>
-  <text x="600" y="520" text-anchor="middle" font-family="serif" font-size="32" fill="#ffffff">Red Hat</text>
-  <text x="600" y="740" text-anchor="middle" font-family="serif" font-size="24" fill="#ffffff">Placeholder image</text>
+  <rect width="1200" height="850" fill="#f2ebd9"/>
+  <rect x="40" y="40" width="1120" height="770" fill="none" stroke="#17140f" stroke-width="5"/>
+  <rect x="58" y="58" width="1084" height="734" fill="none" stroke="#17140f" stroke-width="1.5"/>
+  <text x="600" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" letter-spacing="10" fill="#17140f" opacity="0.7">CERTIFICATE · PLACEHOLDER</text>
+  <text x="600" y="360" text-anchor="middle" font-family="Arial Narrow, Archivo, sans-serif" font-weight="800" font-size="68" fill="#17140f">RED HAT SYSTEM</text>
+  <text x="600" y="438" text-anchor="middle" font-family="Arial Narrow, Archivo, sans-serif" font-weight="800" font-size="68" fill="#17140f">ADMINISTRATION I (RH124 -</text>
+  <text x="600" y="516" text-anchor="middle" font-family="Arial Narrow, Archivo, sans-serif" font-weight="800" font-size="68" fill="#17140f">RHA) - VER. 10</text>
+  <text x="600" y="634" text-anchor="middle" font-family="Georgia, serif" font-size="34" fill="#17140f">Red Hat</text>
+  <rect x="980" y="620" width="110" height="110" rx="10" fill="#b2301b" transform="rotate(-5 1035 675)"/>
 </svg>

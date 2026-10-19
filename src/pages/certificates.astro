@@ -9,9 +9,13 @@ const certificates = (await getCollection('certificates')).sort(
 ---
 
 <BaseLayout title="Certificates | Axel Chrisdy Sanjaya" description="Certificates earned by Axel Chrisdy Sanjaya, each with a link to verify the credential.">
-  <div class="mx-auto max-w-5xl px-4 pb-16 pt-20">
-    <a class="underline" href="/">Back to home</a>
-    <h1 class="mt-4 font-display text-3xl">Certificates</h1>
+  <div class="mx-auto max-w-[90rem] px-4 pb-24 pt-28 md:px-8 md:pt-36">
+    <a class="label label-link" href="/">← Back to home</a>
+    <p class="label mt-12 flex items-center gap-3 opacity-75">
+      <span>Credentials</span><span aria-hidden="true" class="font-jp text-base tracking-normal text-torii">証</span>
+      <span aria-hidden="true" class="h-px w-10 bg-current opacity-50"></span><span>{certificates.length} slips</span>
+    </p>
+    <h1 class="display mt-4 text-[clamp(3.5rem,10vw,9rem)]">Certificates</h1>
     <CertificateGallery certificates={certificates} />
   </div>
 </BaseLayout>

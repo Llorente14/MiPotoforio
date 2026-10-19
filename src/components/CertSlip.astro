@@ -1,0 +1,91 @@
+---
+// A certificate as a torn-off ticket slip: an issuer stub, a perforation, then the title.
+// Phrasing content only, so it can sit inside a link or a button.
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  cert: CollectionEntry<'certificates'>;
+  index: number;
+}
+
+const { cert, index } = Astro.props;
+const { title, issuer, date } = cert.data;
+const fmt = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+const initials = issuer
+  .split(/\s+/)
+  .map((w) => w[0])
+  .join('')
+  .slice(0, 3)
+  .toUpperCase();
+---
+
+<span class="slip">
+  <span class="slip__stub" aria-hidden="true">
+    <span class="slip__seal">{initials}</span>
+    <span class="label mt-3 block">No. {String(index + 1).padStart(3, '0')}</span>
+  </span>
+  <span class="slip__main">
+    <span class="label flex justify-between gap-3 opacity-80"><span>{issuer}</span><span>{fmt.format(date)}</span></span>
+    <span class="slip__title mt-2 block">{title}</span>
+  </span>
+</span>
+
+<style>
+  .slip {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    min-height: 8.5rem;
+    background: #f2ebd9;
+    color: #17140f;
+    text-align: left;
+    /* perforation: punched half-circles where stub meets ticket */
+    mask:
+      radial-gradient(circle at 6.5rem 0, transparent 0.55rem, #000 0.6rem) top / 100% 51% no-repeat,
+      radial-gradient(circle at 6.5rem 100%, transparent 0.55rem, #000 0.6rem) bottom / 100% 51% no-repeat;
+    filter: drop-shadow(0 0.9rem 1rem rgb(23 20 15 / 0.22));
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .slip__stub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-right: 2px dashed rgb(23 20 15 / 0.45);
+    padding: 1rem 0.5rem;
+  }
+  .slip__seal {
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 0.4rem;
+    background: #b2301b;
+    color: #f2ebd9;
+    font-family: var(--font-display);
+    font-stretch: 62%;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    rotate: -6deg;
+  }
+  .slip__main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.1rem 1.4rem;
+  }
+  .slip__title {
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 700;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  :global(a:hover) > .slip,
+  :global(button:hover) > .slip,
+  :global(a:focus-visible) > .slip,
+  :global(button:focus-visible) > .slip {
+    transform: translateY(-4px) rotate(-0.6deg);
+  }
+</style>
