@@ -14,7 +14,7 @@ test('current learning renders every profile item', async ({ page }) => {
   await expect(section.getByRole('img', { name: /3D temple model/ })).toBeVisible();
 });
 
-test('learning panels zigzag on desktop and stack on mobile', async ({ page }, info) => {
+test('learning panels zigzag on desktop (temple on the left first) and stack on mobile', async ({ page }, info) => {
   await page.goto('/');
   const [first, second] = await Promise.all(
     profile.currentLearning.map(async (item) => {
@@ -25,8 +25,8 @@ test('learning panels zigzag on desktop and stack on mobile', async ({ page }, i
     }),
   );
   if (info.project.name === 'desktop') {
-    expect(first.text.x).toBeLessThan(first.visual.x);
-    expect(second.visual.x).toBeLessThan(second.text.x);
+    expect(first.visual.x).toBeLessThan(first.text.x);
+    expect(second.text.x).toBeLessThan(second.visual.x);
   } else {
     expect(first.visual.y).toBeGreaterThan(first.text.y);
     expect(Math.abs(first.visual.x - first.text.x)).toBeLessThan(10);

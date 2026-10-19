@@ -14,7 +14,7 @@ const items = entry.data.currentLearning;
   {
     items.map((item, i) => (
       <article data-learning={item.id} class="learning grid items-center gap-10 border-t border-rule py-14 md:grid-cols-12 md:py-20">
-        <div class:list={['relative md:col-span-5', i % 2 === 0 ? 'md:order-1' : 'md:order-2 md:col-start-8']}>
+        <div class:list={['relative md:col-span-5', i % 2 === 0 ? 'md:order-2 md:col-start-8' : 'md:order-1']}>
           <p class="label opacity-75">{String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}</p>
           <div class="mt-4 flex flex-col items-start gap-6 md:flex-row">
             {item.decoration && (
@@ -28,11 +28,11 @@ const items = entry.data.currentLearning;
             </div>
           </div>
         </div>
-        <div class:list={['md:col-span-6', i % 2 === 0 ? 'md:order-2 md:col-start-7' : 'md:order-1']}>
+        <div class:list={['md:col-span-6', i % 2 === 0 ? 'md:order-1' : 'md:order-2 md:col-start-7']}>
           {item.visual === 'temple' ? (
             <ModelSlot client:visible id="temple" aspect="4 / 3" alt="Cel-shaded 3D temple model, a three-storey Japanese pagoda" />
           ) : (
-            <VisualSlot label="Printed leaf illustration for Spring Boot" />
+            <VisualSlot label="Spring Boot logo" />
           )}
         </div>
       </article>

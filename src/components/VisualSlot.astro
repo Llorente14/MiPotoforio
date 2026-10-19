@@ -1,26 +1,56 @@
 ---
-// Printed illustration for a Current Learning item that has no 3D model (the Spring leaf).
+// The Spring Boot mark for the Current Learning item that has no 3D model: a green hexagon with
+// the power glyph, given a soft gradient, a highlight and an ink offset shadow like a printed sticker.
 // Same footprint as a ModelSlot so the zigzag stays aligned.
 interface Props {
   label: string;
-  kind?: 'leaf';
 }
 
 const { label } = Astro.props;
+// Rounded hexagon, point-up, centred on (0, 0) with radius 100.
+const hex = 'M0 -100 Q8.66 -100 15 -96.3 L79.6 -59 Q86.6 -55 86.6 -47 L86.6 47 Q86.6 55 79.6 59 L15 96.3 Q8.66 100 0 100 Q-8.66 100 -15 96.3 L-79.6 59 Q-86.6 55 -86.6 47 L-86.6 -47 Q-86.6 -55 -79.6 -59 L-15 -96.3 Q-8.66 -100 0 -100 Z';
 ---
 
-<div role="img" aria-label={label} data-slot="leaf" class="relative flex aspect-[4/3] w-full items-center justify-center">
-  <svg viewBox="0 0 320 240" class="h-full" aria-hidden="true">
-    <!-- the leaf: moss fill, ink outline and veins, a lighter cut where the light catches it -->
-    <g transform="translate(160 122) rotate(-18)">
-      <path d="M-96 64 C-110 -10 -40 -96 92 -98 C104 4 34 92 -96 64 Z" fill="var(--color-moss)" stroke="var(--color-ink)" stroke-width="4" stroke-linejoin="round" />
-      <path d="M-70 40 C-62 -18 -10 -64 70 -76 C40 -40 -10 4 -70 40 Z" fill="color-mix(in srgb, var(--color-moss) 65%, var(--color-paper))" />
-      <path d="M-104 76 C-40 20 20 -30 92 -98" fill="none" stroke="var(--color-ink)" stroke-width="4" stroke-linecap="round" />
-      <path d="M-46 30 L-30 -14 M-12 4 L6 -42 M22 -24 L44 -64 M-40 38 L4 40 M-6 12 L42 8 M28 -18 L70 -26" fill="none" stroke="var(--color-ink)" stroke-width="2.5" stroke-linecap="round" />
+<div role="img" aria-label={label} data-slot="spring-boot" class="spring relative flex aspect-[4/3] w-full items-center justify-center">
+  <svg viewBox="-160 -130 320 260" class="h-[78%]" aria-hidden="true">
+    <defs>
+      <linearGradient id="sb-face" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7cc24a" />
+        <stop offset="1" stop-color="#5a9e33" />
+      </linearGradient>
+      <clipPath id="sb-clip"><path d={hex} /></clipPath>
+    </defs>
+    <!-- ink offset shadow, then the hexagon with a thin ink outline -->
+    <path d={hex} transform="translate(9 11)" fill="var(--color-ink)" opacity="0.85" />
+    <path d={hex} fill="url(#sb-face)" stroke="var(--color-ink)" stroke-width="4" />
+    <!-- a soft highlight across the upper half -->
+    <g clip-path="url(#sb-clip)">
+      <path d="M-120 -120 L120 -120 L120 -30 Q0 10 -120 -30 Z" fill="#ffffff" opacity="0.13" />
+    </g>
+    <!-- the power glyph -->
+    <g fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round">
+      <path d="M-27 -30 A44 44 0 1 0 27 -30" />
+      <path d="M0 -50 L0 -2" />
     </g>
     <!-- a printer's registration mark -->
     <g stroke="var(--color-ink)" stroke-width="1.5" fill="none" opacity="0.6">
-      <circle cx="286" cy="34" r="9" /><path d="M272 34 H300 M286 20 V48" />
+      <circle cx="138" cy="-108" r="8" /><path d="M126 -108 H150 M138 -120 V-96" />
     </g>
   </svg>
+  <p class="label spring__caption" aria-hidden="true">Spring Boot</p>
 </div>
+
+<style>
+  .spring svg {
+    filter: drop-shadow(0 0.4rem 0.6rem rgb(23 20 15 / 0.12));
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .spring:hover svg {
+    transform: rotate(-4deg) scale(1.03);
+  }
+  .spring__caption {
+    position: absolute;
+    bottom: 0.5rem;
+    opacity: 0.75;
+  }
+</style>
