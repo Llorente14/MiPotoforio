@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import SkyBackground from '../components/SkyBackground.astro';
 
 interface Props {
   title: string;
@@ -9,7 +11,7 @@ interface Props {
 const { title, description } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="en" data-sky="day">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,9 +25,20 @@ const { title, description } = Astro.props;
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;600&family=Shippori+Mincho:wght@500&display=swap"
     />
+    <script is:inline>
+      // Apply the saved Sky Theme before first paint (no flash). Storage may throw.
+      try {
+        var sky = localStorage.getItem('sky-theme');
+        document.documentElement.dataset.sky = sky === 'dusk' || sky === 'night' ? sky : 'day';
+      } catch (e) {
+        document.documentElement.dataset.sky = 'day';
+      }
+    </script>
     <title>{title}</title>
   </head>
-  <body class="bg-paper text-ink">
+  <body class="text-ink">
+    <SkyBackground />
+    <Navbar />
     <a
       href="#main"
       class="absolute left-3 top-3 z-50 -translate-y-20 rounded bg-torii px-4 py-2 text-paper focus:translate-y-0"

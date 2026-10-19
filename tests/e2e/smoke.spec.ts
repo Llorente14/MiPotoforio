@@ -8,7 +8,8 @@ test('landing page loads with an English document', async ({ page }) => {
 test('about section shows profile facts', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'About me' })).toBeVisible();
-  await expect(page.getByText('Axel Chrisdy Sanjaya', { exact: true })).toBeVisible();
+  const about = page.locator('#about');
+  await expect(about.getByText('Axel Chrisdy Sanjaya', { exact: true })).toBeVisible();
   await expect(page.getByText('Universitas Tarumanagara')).toBeVisible();
   await expect(page.getByText('Informatics Engineering, semester 5')).toBeVisible();
 });
