@@ -22,20 +22,19 @@
     </g>
   </g>
 
-  <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <!-- top hat: tall crown, band line, wide brim -->
-    <path d="M335 768 L335 433 L605 433 L605 766" />
-    <path d="M335 694 L605 694" />
-    <path d="M190 772 Q470 780 742 758" />
-    <!-- monocle cord hanging from the brim to a small weight -->
-    <path d="M214 776 L214 928" stroke-width="10" />
-    <!-- monocle -->
-    <circle cx="560" cy="878" r="84" />
+  <!-- Kid's mark, traced from the sticker: a tilted top hat over a big monocle, a dark eye and a toothy grin,
+       the monocle cord hanging from the brim to a little weight. Sticker coordinates (600 x 600), placed centred. -->
+  <g transform="translate(500 700) scale(1.25) translate(-300 -300)" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
+    <g fill="none" stroke-width="13">
+      <path d="M213 343 L283 80 L527 140 L470 405" fill="#ffffff" />
+      <path d="M226 290 L482 352" />
+      <path d="M108 322 L497 412" />
+      <path d="M165 342 C150 395 178 440 245 442 C305 444 340 420 338 388" />
+      <path d="M140 328 L118 438" stroke-width="9" />
+    </g>
+    <path d="M76 472 L118 430 L132 474 Z" fill="#111111" stroke-width="6" />
+    <path d="M318 385 L472 406 L454 438 Q394 441 342 432 Q340 405 318 385 Z" fill="#111111" stroke-width="6" />
+    <path d="M178 444 Q300 470 418 452 Q405 515 300 526 Q215 522 178 444 Z" fill="#ffffff" stroke-width="13" />
+    <path d="M205 468 Q300 486 402 470 M236 472 L240 512 M270 478 L272 522 M305 481 L305 525 M340 479 L338 520 M373 474 L368 510" fill="none" stroke-width="8" />
   </g>
-  <path d="M188 970 L214 922 L240 970 Z" fill="#111111" />
-  <!-- the eye behind the monocle: a dark wedge under the brim -->
-  <path d="M570 812 L692 796 L688 822 Q642 846 606 848 Z" fill="#111111" />
-  <!-- the grin, drawn over the monocle -->
-  <path d="M340 888 Q520 884 676 840 Q650 962 486 972 Q384 970 340 888 Z" fill="#ffffff" stroke="#111111" stroke-width="16" stroke-linejoin="round" />
-  <path d="M398 900 L410 960 M452 898 L456 970 M506 892 L506 972 M560 884 L556 966 M612 870 L602 950" stroke="#111111" stroke-width="10" stroke-linecap="round" />
 </svg>
