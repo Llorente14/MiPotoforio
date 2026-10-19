@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">
-  <!-- Kaito Kid's calling card: the ace of clubs with his doodle (top hat, monocle and grin) in black line. -->
+  <!-- Kaito Kid's calling card: the ace of clubs with his mark in the middle. -->
   <defs>
     <symbol id="kc-club" viewBox="-50 -52 100 104">
       <circle cx="0" cy="-24" r="22" />
@@ -22,19 +22,6 @@
     </g>
   </g>
 
-  <!-- Kid's mark, traced from the sticker: a tilted top hat over a big monocle, a dark eye and a toothy grin,
-       the monocle cord hanging from the brim to a little weight. Sticker coordinates (600 x 600), placed centred. -->
-  <g transform="translate(500 700) scale(1.25) translate(-300 -300)" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
-    <g fill="none" stroke-width="13">
-      <path d="M213 343 L283 80 L527 140 L470 405" fill="#ffffff" />
-      <path d="M226 290 L482 352" />
-      <path d="M108 322 L497 412" />
-      <path d="M165 342 C150 395 178 440 245 442 C305 444 340 420 338 388" />
-      <path d="M140 328 L118 438" stroke-width="9" />
-    </g>
-    <path d="M76 472 L118 430 L132 474 Z" fill="#111111" stroke-width="6" />
-    <path d="M318 385 L472 406 L454 438 Q394 441 342 432 Q340 405 318 385 Z" fill="#111111" stroke-width="6" />
-    <path d="M178 444 Q300 470 418 452 Q405 515 300 526 Q215 522 178 444 Z" fill="#ffffff" stroke-width="13" />
-    <path d="M205 468 Q300 486 402 470 M236 472 L240 512 M270 478 L272 522 M305 481 L305 525 M340 479 L338 520 M373 474 L368 510" fill="none" stroke-width="8" />
-  </g>
+  <!-- Kid's mark: Axel's own artwork (public/brand/kaito-card.webp, 640 px), centred on the card. -->
+  <image href="/brand/kaito-card.webp" x="110" y="320" width="780" height="780" />
 </svg>
