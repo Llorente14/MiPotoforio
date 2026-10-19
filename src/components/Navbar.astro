@@ -86,7 +86,9 @@ const year = new Date().getFullYear();
         <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
           <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
         </svg>
-        <kbd data-palette-hint class="hidden font-[inherit] sm:inline">Ctrl K</kbd>
+        <span class="hidden items-center gap-1 sm:flex" aria-hidden="true">
+          <kbd class="keycap" data-palette-mod>Ctrl</kbd><span class="opacity-75">+</span><kbd class="keycap">K</kbd>
+        </span>
       </button>
     </nav>
   </div>
@@ -97,8 +99,8 @@ const year = new Date().getFullYear();
 <script>
   // Trigger and shortcut live here so they work before the palette island hydrates.
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-  const hint = document.querySelector('[data-palette-hint]');
-  if (hint && isMac) hint.textContent = '⌘ K';
+  const mod = document.querySelector('[data-palette-mod]');
+  if (mod && isMac) mod.textContent = '⌘';
 
   function openPalette() {
     window.__paletteRequested = true;
@@ -189,6 +191,20 @@ const year = new Date().getFullYear();
   }
   .sky-switch__opt[aria-pressed='true'] {
     color: var(--color-paper);
+  }
+  /* shortcut keys drawn as little keycaps */
+  .keycap {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.45rem;
+    height: 1.35rem;
+    padding: 0 0.3rem;
+    border: 1px solid currentColor;
+    border-bottom-width: 2px;
+    border-radius: 0.25rem;
+    font: inherit;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
   }
   .navbar[data-solid] {
     background: color-mix(in srgb, var(--color-paper) 88%, transparent);
