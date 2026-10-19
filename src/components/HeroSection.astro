@@ -2,11 +2,12 @@
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
 import StripedDisc from './StripedDisc.astro';
+import SocialIcon from './SocialIcon.astro';
 import cardArt from '../assets/card/front.svg?raw';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
-const { name, tagline, coordinates } = entry.data;
+const { name, tagline, coordinates, socials } = entry.data;
 const [first, ...rest] = name.split(' ');
 const last = rest.pop() ?? '';
 const middle = rest.join(' ');
@@ -28,25 +29,32 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     <p class="tategaki hero__epithet">月下の奇術師</p>
   </div>
 
-  <div class="relative mx-auto grid h-full max-w-[90rem] grid-cols-12 items-start gap-x-6 px-4 pt-24 md:items-center md:pt-20 pb-[16vh] md:px-8">
+  <div class="relative mx-auto grid h-full max-w-[90rem] grid-cols-12 items-start gap-x-6 px-4 pt-24 pb-[14svh] md:items-center md:px-8 md:pt-[11svh] md:pb-[12svh]">
     <div data-hero-content class="relative z-10 col-span-12 md:col-span-7 lg:col-span-6">
       <p class="label flex items-center gap-3 opacity-80">
         <span>File 01</span><span aria-hidden="true" class="h-px w-10 bg-current opacity-50"></span><span>Calling card</span>
         <span class="font-jp text-xs tracking-normal" lang="ja" aria-hidden="true">怪盗キッド</span>
       </p>
-      <h1 id="hero-heading" class="display hero__name mt-5">
+      <h1 id="hero-heading" class="display hero__name mt-[2svh]">
         <span class="block">{first}</span>
         {' '}
         <span class="block text-torii">{middle}</span>
         {' '}
         <span class="block">{last}</span>
       </h1>
-      <p class="hero__tagline mt-6 max-w-[30ch]">{tagline}</p>
-      <dl class="label mt-8 flex flex-wrap gap-x-8 gap-y-2 opacity-75">
-        <div><dt class="sr-only">Campus</dt><dd>UNTAR · Jakarta</dd></div>
-        <div><dt class="sr-only">Coordinates</dt><dd>{coordinates}</dd></div>
-      </dl>
-      <p class="label hero__cue mt-10 hidden md:flex items-center gap-3" aria-hidden="true">
+      <p class="hero__tagline mt-[2.5svh] max-w-[30ch]">{tagline}</p>
+      <div class="mt-[3svh] flex flex-wrap items-center gap-x-8 gap-y-4">
+        <ul class="flex gap-2" aria-label="Find Axel online">
+          <li><a class="hero__icon" href={socials.github} aria-label="Axel on GitHub"><SocialIcon name="github" class="size-[1.15rem]" /></a></li>
+          <li><a class="hero__icon" href={socials.linkedin} aria-label="Axel on LinkedIn"><SocialIcon name="linkedin" class="size-[1.15rem]" /></a></li>
+          <li><a class="hero__icon" href={`mailto:${socials.email}`} aria-label="Write to Axel"><SocialIcon name="email" class="size-[1.15rem]" /></a></li>
+        </ul>
+        <dl class="label flex flex-wrap gap-x-8 gap-y-2 opacity-80">
+          <div><dt class="sr-only">Campus</dt><dd>UNTAR · Jakarta</dd></div>
+          <div><dt class="sr-only">Coordinates</dt><dd>{coordinates}</dd></div>
+        </dl>
+      </div>
+      <p class="label hero__cue mt-[4svh] hidden md:flex items-center gap-3" aria-hidden="true">
         <span>Scroll</span><span class="hero__cue-line"></span><span class="font-jp text-xs tracking-normal">カードを引く</span>
       </p>
     </div>
@@ -62,10 +70,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
 
   <!-- The thrown card. Decorative; the transition script grows it from Kaito's hand into a page. -->
   <div data-hero-card aria-hidden="true" class="hero-card">
-    <div class="hero-card__page">
-      <span class="hero-card__index">A<br />♣</span>
-      <span class="hero-card__index hero-card__index--end">A<br />♣</span>
-    </div>
+    <div class="hero-card__page"></div>
     <div data-hero-card-art class="hero-card__art" set:html={cardArt} />
   </div>
 </section>
@@ -91,7 +96,8 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     opacity: 0.55;
   }
   .hero__name {
-    font-size: clamp(3.75rem, 10.5vw, 10rem);
+    /* bounded by height too, so a short window never pushes the text into the grass */
+    font-size: clamp(3.25rem, min(10.5vw, 14svh), 10rem);
   }
   .hero__tagline {
     font-family: var(--font-jp);
@@ -120,7 +126,22 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     position: relative;
     z-index: 30;
     align-self: end;
-    top: 13vh;
+    justify-self: end;
+    width: min(100%, calc((100svh - 4rem) * 0.8));
+    top: 12svh;
+  }
+  .hero__icon {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .hero__icon:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
   }
   @media (max-width: 767px) {
     .hero__kaito {
@@ -145,7 +166,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     inset: auto 0 -1px;
     z-index: 40;
     width: 100%;
-    height: 17vh;
+    height: min(15svh, 9rem);
     fill: #080b14;
     pointer-events: none;
   }
@@ -161,7 +182,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     opacity: 0;
     pointer-events: none;
     border-radius: 0.55rem;
-    background: #f2ebd9;
+    background: #fbfaf6;
     color: #17140f;
     box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.45);
     will-change: transform, width, height;
@@ -169,28 +190,8 @@ const blades = Array.from({ length: 140 }, (_, i) => {
   .hero-card__page {
     position: absolute;
     inset: clamp(0.35rem, 1.2%, 1.25rem);
-    border: 2px solid currentColor;
+    border: 1px solid #d9d5cb;
     border-radius: inherit;
-    outline: 1px solid currentColor;
-    outline-offset: -0.5rem;
-  }
-  .hero-card__index {
-    position: absolute;
-    top: 0.9rem;
-    left: 1.1rem;
-    font-family: var(--font-display);
-    font-stretch: 62%;
-    font-weight: 800;
-    font-size: clamp(1.25rem, 3vw, 3rem);
-    line-height: 0.95;
-    text-align: center;
-  }
-  .hero-card__index--end {
-    top: auto;
-    left: auto;
-    right: 1.1rem;
-    bottom: 0.9rem;
-    transform: rotate(180deg);
   }
   .hero-card__art {
     position: absolute;
