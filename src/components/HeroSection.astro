@@ -1,5 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
+import ModelSlot from './ModelSlot';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -11,9 +12,88 @@ const { name } = entry.data;
   id="hero"
   data-sky="night"
   aria-labelledby="hero-heading"
-  class="relative flex min-h-screen flex-col items-center justify-center bg-paper px-4 text-center text-ink"
+  class="relative h-screen overflow-hidden text-center text-ink"
 >
-  <h1 id="hero-heading" class="font-display text-3xl">{name}</h1>
-  <p class="mt-4 text-xl">Informatics Engineering student building things for the web.</p>
-  <p class="mt-2 font-jp" aria-hidden="true">夜空</p>
+  <!-- Night sky of the Hero. The Card Transition fades it out to reveal the visitor's Sky Theme. -->
+  <div data-hero-sky aria-hidden="true" class="absolute inset-0 bg-paper" style="background-image: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));">
+    <div class="absolute right-[14%] top-[12%] size-16 rounded-full" style="background: var(--sky-body); box-shadow: 0 0 4rem 1.5rem var(--sky-body-glow);"></div>
+  </div>
+
+  <div data-hero-content class="relative z-10 flex h-full flex-col items-center justify-center gap-2 px-4">
+    <h1 id="hero-heading" class="font-display text-3xl">{name}</h1>
+    <p class="text-xl">Informatics Engineering student building things for the web.</p>
+    <p class="font-jp" aria-hidden="true">夜空</p>
+    <div class="mt-4 w-[min(80vw,24rem)]">
+      <ModelSlot client:visible id="kaito" alt="Low-poly 3D Kaito Kid in a white suit holding a card" />
+    </div>
+  </div>
+
+  <!-- The thrown card. Decorative; the transition script animates it. -->
+  <img
+    data-hero-card
+    src="/textures/card-front.png"
+    alt=""
+    aria-hidden="true"
+    width="256"
+    height="358"
+    class="pointer-events-none absolute left-[58%] top-[55%] z-20 w-24 -translate-x-1/2 -translate-y-1/2 opacity-0"
+  />
 </section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import Lenis from 'lenis';
+  import { cardProgress } from '../lib/card-progress';
+  import { getDeviceCapability } from '../lib/device-capability';
+
+  const { allow3d, reducedMotion } = getDeviceCapability();
+  const hero = document.querySelector<HTMLElement>('#hero');
+  const sky = hero?.querySelector<HTMLElement>('[data-hero-sky]');
+  const content = hero?.querySelector<HTMLElement>('[data-hero-content]');
+  const card = hero?.querySelector<HTMLElement>('[data-hero-card]');
+
+  // Reduced motion: no smooth scrolling, no pinning, no transition. About is reached by normal scroll.
+  if (hero && sky && content && card && !reducedMotion) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const lenis = new Lenis();
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    // Scale that makes the 96px-wide card cover the whole viewport.
+    const coverScale = () => Math.max(window.innerWidth / card.offsetWidth, window.innerHeight / card.offsetHeight) * 1.3;
+
+    if (allow3d) {
+      // Desktop: pin the Hero; the card flies at the camera, fills the screen, then opens onto the new sky.
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => (cardProgress.value = self.progress),
+        },
+      });
+      tl.to(card, { opacity: 1, duration: 0.05 }, 0)
+        .to(card, { left: '50%', top: '50%', rotation: 540, scale: coverScale, duration: 0.5 }, 0)
+        .to(content, { opacity: 0, duration: 0.15 }, 0.4)
+        .to(sky, { opacity: 0, duration: 0.3 }, 0.55)
+        .to(card, { opacity: 0, scale: () => coverScale() * 1.6, duration: 0.3 }, 0.7);
+    } else {
+      // Phones and tablets: no pinning, no 3D; a simple crossfade as the Hero scrolls away.
+      gsap
+        .timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+        })
+        .to(card, { opacity: 0.9, left: '50%', top: '50%', duration: 0.5 }, 0)
+        .to(sky, { opacity: 0, duration: 0.5 }, 0.3)
+        .to(card, { opacity: 0, duration: 0.3 }, 0.7);
+    }
+  }
+</script>
