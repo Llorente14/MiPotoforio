@@ -1,4 +1,42 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
+import CommandPalette, { type PaletteItem } from './CommandPalette';
+
+const profile = await getEntry('profile', 'profile');
+if (!profile) throw new Error('Profile content entry "profile" is missing');
+const { socials } = profile.data;
+
+const paletteItems: PaletteItem[] = [
+  ...[
+    ['About', 'about'],
+    ['Current Learning', 'learning'],
+    ['Detective Conan', 'conan'],
+    ['Portfolio', 'portfolio'],
+    ['GitHub Activity', 'github'],
+  ].map(([label, id]): PaletteItem => ({ label, group: 'Section', url: `/#${id}` })),
+  { label: 'All projects', group: 'Project', url: '/projects/' },
+  ...(await getCollection('projects'))
+    .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
+    .map((p): PaletteItem => ({
+      label: p.data.title,
+      group: 'Project',
+      url: `/projects/${p.id}/`,
+      keywords: p.data.stack.join(' '),
+    })),
+  { label: 'All certificates', group: 'Certificate', url: '/certificates/' },
+  ...(await getCollection('certificates'))
+    .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
+    .map((c): PaletteItem => ({
+      label: c.data.title,
+      group: 'Certificate',
+      url: '/certificates/',
+      keywords: c.data.issuer,
+    })),
+  { label: 'GitHub', group: 'Link', url: socials.github },
+  { label: 'LinkedIn', group: 'Link', url: socials.linkedin },
+  { label: 'Email', group: 'Link', url: `mailto:${socials.email}` },
+];
+
 const themes = [
   { id: 'day', label: 'Day' },
   { id: 'dusk', label: 'Dusk' },
@@ -6,7 +44,19 @@ const themes = [
 ] as const;
 ---
 
-<header class="fixed inset-x-0 top-0 z-40 flex justify-end px-4 py-3">
+<header class="fixed inset-x-0 top-0 z-40 flex items-center justify-end gap-2 px-4 py-3">
+  <button
+    type="button"
+    data-palette-trigger
+    aria-label="Open search"
+    class="flex items-center gap-2 rounded-full bg-paper/80 px-3 py-1.5 text-sm backdrop-blur"
+  >
+    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
+    </svg>
+    <span>Search</span>
+    <kbd data-palette-hint class="hidden rounded border border-ink/30 px-1 text-xs md:inline">Ctrl K</kbd>
+  </button>
   <nav aria-label="Main">
     <div role="group" aria-label="Sky theme" class="flex gap-1 rounded-full bg-paper/80 p-1 backdrop-blur">
       {
@@ -25,7 +75,26 @@ const themes = [
   </nav>
 </header>
 
+<CommandPalette client:idle items={paletteItems} />
+
 <script>
+  // Trigger and shortcut live here so they work before the palette island hydrates.
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const hint = document.querySelector('[data-palette-hint]');
+  if (hint && isMac) hint.textContent = '⌘K';
+
+  function openPalette() {
+    window.__paletteRequested = true;
+    window.dispatchEvent(new Event('palette:open'));
+  }
+  document.querySelector('[data-palette-trigger]')?.addEventListener('click', openPalette);
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openPalette();
+    }
+  });
+
   type Sky = 'day' | 'dusk' | 'night';
   const buttons = document.querySelectorAll<HTMLButtonElement>('[data-sky-option]');
 
