@@ -1,0 +1,22 @@
+name: Daily deploy
+
+# Rebuilds the site once a day so the GitHub heatmap stays fresh.
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Vercel Deploy Hook
+        env:
+          HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "VERCEL_DEPLOY_HOOK_URL is not set; skipping deploy."
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST "$HOOK_URL"
+          echo "Deploy hook triggered."
