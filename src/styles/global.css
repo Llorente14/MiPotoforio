@@ -84,3 +84,16 @@ html {
   outline: 3px solid var(--color-torii);
   outline-offset: 3px;
 }
+
+/* Section entrance motion (classes are only added when motion is allowed). */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.reveal.reveal-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}

@@ -1,0 +1,23 @@
+<script>
+  // Entrance motion for each landing Section: fade and slide up once. Skipped under reduced motion.
+  const ids = ['about', 'learning', 'conan', 'portfolio', 'github'];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduced && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('reveal-in');
+          observer.unobserve(entry.target);
+        }),
+      { threshold: 0.08 },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  }
+</script>
