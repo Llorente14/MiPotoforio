@@ -1,25 +1,109 @@
 ---
 import { getEntry } from 'astro:content';
+import ModelSlot from './ModelSlot';
+import SectionHead from './SectionHead.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
 const { name, university, major, semester, socials } = entry.data;
-import ModelSlot from './ModelSlot';
+
+const links = [
+  { label: 'GitHub', aria: 'GitHub profile', href: socials.github, note: new URL(socials.github).pathname.slice(1) },
+  { label: 'LinkedIn', aria: 'LinkedIn profile', href: socials.linkedin, note: 'in/axelchrisdy' },
+  { label: 'Email', aria: 'Email Axel', href: `mailto:${socials.email}`, note: socials.email },
+];
 ---
 
-<section id="about" aria-labelledby="about-heading" class="mx-auto max-w-5xl px-4 py-16">
-  <h2 id="about-heading" class="font-display text-3xl">About me</h2>
-  <p class="mt-4 text-xl">{name}</p>
-  <p class="mt-2">{university}</p>
-  <p>{major}, semester {semester}</p>
+<!-- The page the Hero card opens into: a card face with a double frame and corner indices. -->
+<section id="about" aria-labelledby="about-heading" class="relative px-3 pt-3 md:px-5 md:pt-5">
+  <div class="card-face relative mx-auto max-w-[90rem] bg-paper px-5 py-16 md:px-14 md:py-24">
+    <span class="card-face__index" aria-hidden="true">A<br />♣</span>
+    <span class="card-face__index card-face__index--end" aria-hidden="true">A<br />♣</span>
 
-  <ul class="mt-6 flex flex-wrap gap-4">
-    <li><a class="underline" href={socials.github} aria-label="GitHub profile">GitHub</a></li>
-    <li><a class="underline" href={socials.linkedin} aria-label="LinkedIn profile">LinkedIn</a></li>
-    <li><a class="underline" href={`mailto:${socials.email}`} aria-label="Email Axel">Email</a></li>
-  </ul>
+    <div class="grid items-end gap-12 md:grid-cols-12">
+      <div class="md:col-span-7">
+        <SectionHead number="02" kanji="私" label="Who" id="about-heading" title="About me" />
 
-  <div class="mx-auto mt-8 max-w-xl">
-    <ModelSlot client:visible id="untar" alt="Low-poly 3D model of UNTAR Building 2" />
+        <dl class="mt-12 max-w-xl border-t border-rule">
+          <div class="record-row"><dt class="label">Name</dt><dd>{name}</dd></div>
+          <div class="record-row"><dt class="label">University</dt><dd>{university}</dd></div>
+          <div class="record-row"><dt class="label">Programme</dt><dd>{major}, semester {semester}</dd></div>
+        </dl>
+
+        <ul class="mt-10 grid max-w-xl gap-px sm:grid-cols-3">
+          {
+            links.map((l) => (
+              <li>
+                <a class="social group" href={l.href} aria-label={l.aria}>
+                  <span class="label flex items-center justify-between">
+                    {l.label}
+                    <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+                  </span>
+                  <span class="mt-1 block truncate text-sm opacity-80">{l.note}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <figure class="relative md:col-span-5">
+        <p class="tategaki absolute -left-2 top-0 text-2xl opacity-75 md:-left-10" aria-hidden="true">大学二号館</p>
+        <ModelSlot client:visible id="untar" aspect="3 / 4" alt="Cel-shaded 3D model of UNTAR Building 2" />
+        <figcaption class="label mt-3 flex justify-between opacity-80">
+          <span>Campus I · Building 2</span><span>Jakarta Barat</span>
+        </figcaption>
+      </figure>
+    </div>
   </div>
 </section>
+
+<style>
+  .card-face {
+    border-radius: 0.75rem;
+    box-shadow:
+      inset 0 0 0 2px var(--color-ink),
+      inset 0 0 0 9px var(--color-paper),
+      inset 0 0 0 10px var(--color-ink);
+  }
+  .card-face__index {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.6rem;
+    font-family: var(--font-display);
+    font-stretch: 62%;
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 0.95;
+    text-align: center;
+  }
+  .card-face__index--end {
+    top: auto;
+    left: auto;
+    right: 1.6rem;
+    bottom: 1.5rem;
+    transform: rotate(180deg);
+  }
+  .record-row {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--color-rule);
+    font-size: 1.125rem;
+  }
+  .record-row dt {
+    opacity: 0.8;
+  }
+  .social {
+    display: block;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--color-ink);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .social:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+</style>

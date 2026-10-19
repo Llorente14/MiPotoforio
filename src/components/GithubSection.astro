@@ -1,6 +1,7 @@
 ---
 import { fetchContributions } from '../lib/github-contributions';
 import { getEntry } from 'astro:content';
+import SectionHead from './SectionHead.astro';
 
 const profile = await getEntry('profile', 'profile');
 if (!profile) throw new Error('Profile content entry "profile" is missing');
@@ -15,15 +16,16 @@ const label = (count: number, date: string) =>
   `${count} ${count === 1 ? 'contribution' : 'contributions'} on ${dateFmt.format(new Date(date))}`;
 ---
 
-<section id="github" aria-labelledby="github-heading" class="mx-auto max-w-5xl px-4 py-16">
-  <h2 id="github-heading" class="font-display text-3xl">GitHub Activity</h2>
+<section id="github" aria-labelledby="github-heading" class="mx-auto max-w-[90rem] px-4 pb-24 md:px-8 md:pb-36">
+  <SectionHead number="06" kanji="録" label="Ledger" id="github-heading" title="GitHub Activity" />
   {
     result.status === 'ok' ? (
       <>
-        <p class="mt-4" data-github-summary>
-          {result.total} contributions in the last year
+        <p class="mt-8 flex items-baseline gap-4" data-github-summary>
+          <span class="display text-[clamp(3rem,7vw,6rem)] text-torii">{result.total}</span>
+          <span class="label">contributions in the last year</span>
         </p>
-        <div class="mt-4 overflow-x-auto rounded-lg bg-paper/80 p-4 backdrop-blur">
+        <div class="mt-8 overflow-x-auto border-y-2 border-ink py-5">
           <ul
             aria-label="Contribution heatmap, one cell per day"
             class="grid w-max grid-flow-col grid-rows-7 gap-[3px]"
@@ -34,7 +36,7 @@ const label = (count: number, date: string) =>
                   title={label(day.count, day.date)}
                   aria-label={label(day.count, day.date)}
                   data-level={day.level}
-                  class="heat-cell size-3 rounded-sm"
+                  class="heat-cell size-3"
                 />
               )),
             )}
@@ -42,20 +44,21 @@ const label = (count: number, date: string) =>
         </div>
       </>
     ) : (
-      <p class="mt-4" data-github-empty>
+      <p class="mt-8 max-w-xl border-l-2 border-torii pl-4 font-jp text-lg" data-github-empty>
         Contribution activity is not available right now. See the live graph on GitHub instead.
       </p>
     )
   }
-  <p class="mt-6"><a class="underline" href={profileUrl}>View {username} on GitHub</a></p>
+  <p class="mt-8"><a class="label label-link" href={profileUrl}>View {username} on GitHub</a></p>
 </section>
 
 <style>
+  /* Ink on washi: empty days are a faint stamp, busy days run up to full shu. */
   .heat-cell {
-    background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+    background: color-mix(in srgb, var(--color-ink) 9%, transparent);
   }
-  .heat-cell[data-level="1"] { background: color-mix(in srgb, var(--color-torii) 30%, transparent); }
-  .heat-cell[data-level="2"] { background: color-mix(in srgb, var(--color-torii) 55%, transparent); }
-  .heat-cell[data-level="3"] { background: color-mix(in srgb, var(--color-torii) 80%, transparent); }
+  .heat-cell[data-level="1"] { background: color-mix(in srgb, var(--color-ink) 30%, transparent); }
+  .heat-cell[data-level="2"] { background: color-mix(in srgb, var(--color-ink) 58%, transparent); }
+  .heat-cell[data-level="3"] { background: var(--color-ink); }
   .heat-cell[data-level="4"] { background: var(--color-torii); }
 </style>
