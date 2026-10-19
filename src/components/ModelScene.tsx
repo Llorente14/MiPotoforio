@@ -121,14 +121,30 @@ function Wake({ enabled }: { enabled: boolean }) {
 }
 
 // The figure leans a little toward the pointer, easing until it settles. No spins: these are figures on a print.
-function Lean({ children, reducedMotion, amount }: { children: ReactNode; reducedMotion: boolean; amount: number }) {
+// With a swing, it also turns slowly back and forth across that many degrees while it is on screen.
+function Lean({
+  children,
+  reducedMotion,
+  amount,
+  swing = 0,
+}: {
+  children: ReactNode;
+  reducedMotion: boolean;
+  amount: number;
+  swing?: number;
+}) {
   const ref = useRef<Group>(null);
+  const t = useRef(0);
   useFrame((state, delta) => {
     if (reducedMotion || !ref.current) return;
-    const target = state.pointer.x * amount;
+    const box = state.gl.domElement.getBoundingClientRect();
+    const onScreen = box.bottom > 0 && box.top < window.innerHeight;
+    if (swing && onScreen) t.current += delta;
+    const target = state.pointer.x * amount + Math.sin(t.current * 0.45) * ((swing / 2) * Math.PI) / 180;
     const diff = target - ref.current.rotation.y;
     ref.current.rotation.y += diff * Math.min(delta * 4, 1);
-    if (Math.abs(diff) > 0.002) state.invalidate();
+    // Keep drawing while swinging on screen; otherwise only until the lean settles (scrolling wakes it again).
+    if ((swing && onScreen) || Math.abs(diff) > 0.002) state.invalidate();
   });
   return <group ref={ref}>{children}</group>;
 }
@@ -136,10 +152,19 @@ function Lean({ children, reducedMotion, amount }: { children: ReactNode; reduce
 // light scales both lamps: the pale building needs less than the figures.
 const framing: Record<
   ModelId,
-  { camera: [number, number, number]; fov: number; margin: number; sway: number; ground: boolean; light?: number }
+  {
+    camera: [number, number, number];
+    fov: number;
+    margin: number;
+    sway: number;
+    ground: boolean;
+    light?: number;
+    // Turn slowly back and forth across this many degrees (never a full spin).
+    swing?: number;
+  }
 > = {
   kaito: { camera: [-0.45, 0.62, 2.6], fov: 30, margin: 1.02, sway: 0.12, ground: false },
-  untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.12, sway: 0.35, ground: true, light: 0.7 },
+  untar: { camera: [-3, 2.4, 6.5], fov: 34, margin: 1.14, sway: 0.15, ground: true, light: 0.7, swing: 135 },
   temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
   akai: { camera: [2.6, 1.4, 3.4], fov: 34, margin: 1.08, sway: 0.2, ground: true },
 };
@@ -160,7 +185,7 @@ export default function ModelScene({ id, reducedMotion }: { id: ModelId; reduced
       <Wake enabled={!reducedMotion} />
       <Suspense fallback={null}>
         <Bounds fit clip margin={f.margin} maxDuration={reducedMotion ? 0 : 0.6}>
-          <Lean reducedMotion={reducedMotion} amount={f.sway}>
+          <Lean reducedMotion={reducedMotion} amount={f.sway} swing={f.swing}>
             <MissingModelBoundary>
               <Model id={id} />
             </MissingModelBoundary>

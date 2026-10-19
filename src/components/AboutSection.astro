@@ -2,7 +2,6 @@
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
 import SectionHead from './SectionHead.astro';
-import StripedDisc from './StripedDisc.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
@@ -13,7 +12,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 <!-- The page the Hero card opens into: a calling card with a double frame and Kid's mark in the corner. -->
 <section id="about" aria-labelledby="about-heading" class="relative px-3 pt-3 md:px-5 md:pt-5">
   <div class="card-face relative mx-auto max-w-[90rem] bg-paper px-5 pb-12 pt-20 md:px-12 md:py-14">
-    <svg class="card-face__mark" viewBox="-260 -400 520 680" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M-128 -150 L-118 -372 Q0 -392 118 -372 L128 -150" stroke-width="22" /><path d="M-127 -196 Q0 -176 127 -196 L128 -150 Q0 -130 -128 -150 Z" fill="currentColor" stroke-width="12" /><path d="M-250 -140 Q0 -100 250 -140" stroke-width="22" /><path d="M-150 -18 Q-108 -52 -62 -20" stroke-width="22" /><circle cx="104" cy="-12" r="74" stroke-width="22" /><path d="M-196 82 Q-20 126 196 70 Q140 252 -10 258 Q-150 252 -196 82 Z" stroke-width="22" /></svg>
+    <img class="card-face__mark" src="/brand/kaito-mark.webp" alt="" width="192" height="192" aria-hidden="true" />
 
     <div class="grid items-center gap-10 md:grid-cols-12 md:gap-8">
       <div class="md:col-span-6 md:pl-6">
@@ -52,16 +51,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
       </div>
 
       <figure class="relative md:col-span-6">
-        <!-- An arched window of evening sky behind the building, fading out at the sides into the card. -->
-        <div class="stage">
-          <div class="stage__sky" aria-hidden="true">
-            <StripedDisc class="stage__sun" bands={9} />
-          </div>
-          <p class="tategaki stage__kanji" aria-hidden="true">大学二号館</p>
-          <div class="relative mx-auto w-[86%]">
-            <ModelSlot client:visible id="untar" aspect="4 / 5" alt="Cel-shaded 3D model of UNTAR Building 2" />
-          </div>
-        </div>
+        <p class="tategaki stage__kanji" aria-hidden="true">大学二号館</p>
+        <ModelSlot client:visible id="untar" aspect="1 / 1" alt="Cel-shaded 3D model of UNTAR Building 2" />
         <figcaption class="label mt-4 flex justify-between px-2 opacity-80">
           <span>Campus I · Building 2</span><span>Jakarta Barat</span>
         </figcaption>
@@ -83,7 +74,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
     position: absolute;
     top: 1.6rem;
     left: 1.7rem;
-    width: 2.6rem;
+    width: 3.6rem;
+    height: auto;
+  }
+  /* the mark is black ink: on the Night card print it in washi instead */
+  :global([data-sky='night']) .card-face__mark {
+    filter: invert(1);
   }
   .record-row {
     display: grid;
@@ -152,44 +148,13 @@ const pad = (n: number) => String(n).padStart(2, '0');
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-torii) 25%, transparent);
   }
 
-  .stage {
-    position: relative;
-    padding-top: 2.5rem;
-  }
-  /* Arch-topped panel: indigo dusk at the top warming to washi at the base, fading out left and right. */
-  .stage__sky {
-    position: absolute;
-    inset: 0 4% 3rem;
-    border-radius: 999px 999px 1rem 1rem;
-    overflow: hidden;
-    background:
-      radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--color-kincha) 45%, transparent), transparent 70%),
-      linear-gradient(to bottom, color-mix(in srgb, var(--color-ai) 88%, transparent), color-mix(in srgb, var(--color-ai) 30%, var(--color-paper)));
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
-  }
-  /* On the Night card the window is moonlight instead: a lighter wash so the arch still reads. */
-  :global([data-sky='night']) .stage__sky {
-    background:
-      radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--color-kincha) 40%, transparent), transparent 70%),
-      linear-gradient(to bottom, #2b3a5c, color-mix(in srgb, #2b3a5c 40%, var(--color-paper)));
-  }
-  .stage :global(.stage__sun) {
-    position: absolute;
-    top: 12%;
-    right: 14%;
-    width: 30%;
-    color: #ece4d0;
-    opacity: 0.85;
-  }
   .stage__kanji {
     position: absolute;
-    top: 4.5rem;
-    left: 15%;
+    top: 0.5rem;
+    left: 0;
     z-index: 1;
     font-size: 1.5rem;
     letter-spacing: 0.3em;
-    color: #ece4d0;
-    opacity: 0.9;
+    opacity: 0.75;
   }
 </style>
