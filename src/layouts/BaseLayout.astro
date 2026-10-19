@@ -45,7 +45,7 @@ const ogImage = new URL(image, Astro.site);
       // Apply the saved Sky Theme before first paint (no flash). Storage may throw.
       try {
         var sky = localStorage.getItem('sky-theme');
-        document.documentElement.dataset.sky = sky === 'dusk' || sky === 'night' ? sky : 'day';
+        document.documentElement.dataset.sky = sky === 'night' ? 'night' : 'day';
       } catch (e) {
         document.documentElement.dataset.sky = 'day';
       }

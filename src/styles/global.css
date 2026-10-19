@@ -7,7 +7,7 @@
 
 /*
   Woodblock print on washi: sumi ink, shu (vermilion seal) and ai (indigo).
-  Day is the default; the Sky Theme switches via [data-sky]. The Hero re-scopes itself to Night.
+  Light (data-sky="day") is the default; the Sky Theme switches to Night via [data-sky]. The Hero re-scopes itself to Night.
 */
 :root {
   --color-paper: #ece4d0;
@@ -47,17 +47,6 @@
 }
 
 /* Sky Theme: <html data-sky> switches the page; the Hero sets data-sky="night" on itself to stay Night. */
-[data-sky="dusk"] {
-  --color-paper: #d3c7a2;
-  --color-ink: #1b1810;
-  --color-torii: #8a2a16;
-  --sky-top: #a99c72;
-  --sky-bottom: #cfc29b;
-  --sky-body: #a57a2c;
-  --sky-stars: 0;
-  --sky-hills: #8d8360;
-}
-
 [data-sky="night"] {
   --color-paper: #121a2e;
   --color-ink: #ece4d0;

@@ -10,7 +10,7 @@ const paletteItems: PaletteItem[] = [
   ...[
     ['About', 'about'],
     ['Current Learning', 'learning'],
-    ['Detective Conan', 'conan'],
+    ['Fun fact', 'conan'],
     ['Portfolio', 'portfolio'],
     ['GitHub Activity', 'github'],
   ].map(([label, id]): PaletteItem => ({ label, group: 'Section', url: `/#${id}` })),
@@ -37,10 +37,10 @@ const paletteItems: PaletteItem[] = [
   { label: 'Email', group: 'Link', url: `mailto:${socials.email}` },
 ];
 
+// Two skies only. 'day' stays the stored value so returning visitors keep their choice.
 const themes = [
-  { id: 'day', label: 'Day', kanji: '昼' },
-  { id: 'dusk', label: 'Dusk', kanji: '夕' },
-  { id: 'night', label: 'Night', kanji: '夜' },
+  { id: 'day', label: 'Light', icon: 'M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z' },
+  { id: 'night', label: 'Night', icon: 'M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z' },
 ] as const;
 
 const links = [
@@ -64,19 +64,15 @@ const year = new Date().getFullYear();
       <ul class="hidden items-center gap-5 md:flex">
         {links.map((l) => <li><a class="label label-link" href={l.href}>{l.label}</a></li>)}
       </ul>
-      <div role="group" aria-label="Sky theme" class="label flex items-center gap-2">
-        <span aria-hidden="true" class="hidden opacity-75 sm:inline">Sky /</span>
+      <div role="group" aria-label="Sky theme" class="sky-switch">
+        <span class="sky-switch__knob" aria-hidden="true"></span>
         {
           themes.map((t) => (
-            <button
-              type="button"
-              data-sky-option={t.id}
-              aria-label={t.label}
-              aria-pressed={t.id === 'day' ? 'true' : 'false'}
-              class="label label-link px-0.5 py-2"
-            >
-              <span aria-hidden="true" class="hidden sm:inline">{t.label}</span>
-              <span aria-hidden="true" class="font-jp text-sm tracking-normal sm:hidden">{t.kanji}</span>
+            <button type="button" data-sky-option={t.id} aria-label={t.label} aria-pressed={t.id === 'day' ? 'true' : 'false'} class="sky-switch__opt">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d={t.icon} />
+              </svg>
+              <span aria-hidden="true" class="label hidden lg:inline">{t.label}</span>
             </button>
           ))
         }
@@ -90,8 +86,7 @@ const year = new Date().getFullYear();
         <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
           <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
         </svg>
-        <span class="hidden sm:inline">Index</span>
-        <kbd data-palette-hint class="hidden font-[inherit] md:inline">Ctrl K</kbd>
+        <kbd data-palette-hint class="hidden font-[inherit] sm:inline">Ctrl K</kbd>
       </button>
     </nav>
   </div>
@@ -117,7 +112,7 @@ const year = new Date().getFullYear();
     }
   });
 
-  type Sky = 'day' | 'dusk' | 'night';
+  type Sky = 'day' | 'night';
   const buttons = document.querySelectorAll<HTMLButtonElement>('[data-sky-option]');
 
   function sync() {
@@ -156,6 +151,44 @@ const year = new Date().getFullYear();
 <style>
   .navbar {
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  /* Light / Night switch: a pill with a sliding ink knob under the active option. */
+  .sky-switch {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 2px;
+  }
+  .sky-switch__knob {
+    position: absolute;
+    inset: 2px auto 2px 2px;
+    width: calc(50% - 2px);
+    border-radius: 999px;
+    background: var(--color-ink);
+    transition: translate 0.35s cubic-bezier(0.3, 1.3, 0.5, 1);
+  }
+  .sky-switch:has([data-sky-option='night'][aria-pressed='true']) .sky-switch__knob {
+    translate: 100% 0;
+  }
+  .sky-switch__opt {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 2.5rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    transition: color 0.3s ease;
+  }
+  .sky-switch__opt svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+  .sky-switch__opt[aria-pressed='true'] {
+    color: var(--color-paper);
   }
   .navbar[data-solid] {
     background: color-mix(in srgb, var(--color-paper) 88%, transparent);

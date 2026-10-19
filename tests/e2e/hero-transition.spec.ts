@@ -40,15 +40,15 @@ test("desktop: the card grows from Kaito's hand to cover the viewport, About fol
 test('desktop: after the transition the sky matches the chosen theme, the Hero stays night', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop');
   await page.goto('/');
-  await page.getByRole('button', { name: 'Dusk' }).click();
+  await page.getByRole('button', { name: 'Night' }).click();
   const heroNight = await page.locator('[data-hero-sky]').evaluate((el) => getComputedStyle(el).backgroundColor);
   await page.evaluate(() => document.querySelector('#about')!.scrollIntoView());
-  await expect(page.locator('html')).toHaveAttribute('data-sky', 'dusk');
+  await expect(page.locator('html')).toHaveAttribute('data-sky', 'night');
   await expect(page.locator('[data-hero-sky]')).toHaveCSS('opacity', '0');
-  const dusk = await page.locator('.sky').evaluate((el) => getComputedStyle(el).backgroundImage);
-  await page.getByRole('button', { name: 'Night' }).click();
   const night = await page.locator('.sky').evaluate((el) => getComputedStyle(el).backgroundImage);
-  expect(dusk).not.toBe(night);
+  await page.getByRole('button', { name: 'Light' }).click();
+  const light = await page.locator('.sky').evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(light).not.toBe(night);
   // The Hero's own sky never follows the theme.
   expect(await page.locator('[data-hero-sky]').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(heroNight);
 });
