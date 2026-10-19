@@ -1,0 +1,41 @@
+---
+import { getEntry } from 'astro:content';
+import VisualSlot from './VisualSlot.astro';
+
+const entry = await getEntry('profile', 'profile');
+if (!entry) throw new Error('Profile content entry "profile" is missing');
+const items = entry.data.currentLearning;
+
+const slotLabel = {
+  temple: 'Placeholder for a future 3D temple model',
+  leaf: 'Placeholder leaf illustration for Spring Boot',
+} as const;
+---
+
+<section id="learning" aria-labelledby="learning-heading" class="mx-auto max-w-5xl px-4 py-16">
+  <h2 id="learning-heading" class="font-display text-3xl">Current Learning</h2>
+  {
+    items.map((item, i) => (
+      <>
+        {i > 0 && <div aria-hidden="true" class="mx-auto h-16 w-0 border-l-2 border-dashed border-ink/40" />}
+        <article
+          data-learning={item.id}
+          class="grid min-h-[60vh] items-center gap-8 py-8 md:grid-cols-2"
+        >
+          <div class={i % 2 === 0 ? 'md:order-1' : 'md:order-2'}>
+            {item.decoration && (
+              <p aria-hidden="true" lang="ja" class="font-jp text-6xl text-torii">
+                {item.decoration}
+              </p>
+            )}
+            <h3 class="mt-2 font-display text-2xl">{item.title}</h3>
+            <p class="mt-3 text-lg">{item.status}</p>
+          </div>
+          <div class={i % 2 === 0 ? 'md:order-2' : 'md:order-1'}>
+            <VisualSlot kind={item.visual} label={slotLabel[item.visual]} />
+          </div>
+        </article>
+      </>
+    ))
+  }
+</section>
