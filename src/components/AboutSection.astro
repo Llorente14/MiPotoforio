@@ -1,0 +1,23 @@
+---
+import { getEntry } from 'astro:content';
+
+const entry = await getEntry('profile', 'profile');
+if (!entry) throw new Error('Profile content entry "profile" is missing');
+const { name, university, major, semester, socials } = entry.data;
+---
+
+<section id="about" aria-labelledby="about-heading" class="mx-auto max-w-5xl px-4 py-16">
+  <h2 id="about-heading" class="font-display text-3xl">About me</h2>
+  <p class="mt-4 text-xl">{name}</p>
+  <p class="mt-2">{university}</p>
+  <p>{major}, semester {semester}</p>
+
+  <ul class="mt-6 flex flex-wrap gap-4">
+    <li><a class="underline" href={socials.github} aria-label="GitHub profile">GitHub</a></li>
+    <li><a class="underline" href={socials.linkedin} aria-label="LinkedIn profile">LinkedIn</a></li>
+    <li><a class="underline" href={`mailto:${socials.email}`} aria-label="Email Axel">Email</a></li>
+  </ul>
+
+  <!-- TODO(model): UNTAR Building 2 model goes here (ModelSlot, later ticket) -->
+  <div data-slot="untar-building" class="mt-8 hidden" aria-hidden="true"></div>
+</section>

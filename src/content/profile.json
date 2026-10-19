@@ -1,0 +1,31 @@
+{
+  "name": "Axel Chrisdy Sanjaya",
+  "university": "Universitas Tarumanagara",
+  "major": "Informatics Engineering",
+  "semester": 5,
+  "socials": {
+    "github": "https://github.com/Llorente14",
+    "linkedin": "https://www.linkedin.com/in/axelchrisdy",
+    "email": "axel.chrisdy@gmail.com"
+  },
+  "currentLearning": [
+    {
+      "id": "nihongo",
+      "title": "Nihongo",
+      "decoration": "日本語",
+      "status": "Just getting started. I can't take the JLPT N5 yet, but I am studying a little every day.",
+      "visual": "temple"
+    },
+    {
+      "id": "spring-boot",
+      "title": "Spring / Spring Boot",
+      "decoration": "",
+      "status": "Learning to build backend services in Java with Spring and Spring Boot.",
+      "visual": "leaf"
+    }
+  ],
+  "currentlyWatching": {
+    "episode": 770,
+    "label": "canon"
+  }
+}

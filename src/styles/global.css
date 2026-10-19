@@ -1,1 +1,50 @@
 @import "tailwindcss";
+
+/* Design tokens. Day (washi) palette is the default; Sky Theme switches via [data-sky]. */
+:root {
+  --color-paper: #f6efe0;
+  --color-ink: #1f1a17;
+  --color-torii: #c8362b;
+  --color-sakura: #f4b6c2;
+
+  --font-display: "Fraunces", "Shippori Mincho", serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-jp: "Shippori Mincho", serif;
+
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+  --space-7: 6rem;
+}
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-torii: var(--color-torii);
+  --color-sakura: var(--color-sakura);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-jp: var(--font-jp);
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-torii);
+  outline-offset: 3px;
+}
