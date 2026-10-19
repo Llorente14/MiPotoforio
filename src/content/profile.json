@@ -4,6 +4,8 @@
   "major": "Informatics Engineering",
   "semester": 5,
   "totalSemesters": 8,
+  "gpa": 3.98,
+  "gpaScale": 4,
   "tagline": "Informatics Engineering student in Jakarta, building things for the web.",
   "coordinates": "6°10′S  106°47′E",
   "socials": {

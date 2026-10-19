@@ -13,6 +13,8 @@ test('about section shows profile facts', async ({ page }) => {
   await expect(page.getByText('Universitas Tarumanagara')).toBeVisible();
   await expect(page.getByText('Informatics Engineering, semester 5')).toBeVisible();
   await expect(about.getByRole('list', { name: 'Semester 5 of 8' }).getByRole('listitem')).toHaveCount(8);
+  await expect(about.getByRole('meter', { name: 'GPA' })).toHaveAttribute('aria-valuenow', '3.98');
+  await expect(about.getByText('3.98')).toBeVisible();
 });
 
 test('hero contact links have correct hrefs and accessible names', async ({ page }) => {

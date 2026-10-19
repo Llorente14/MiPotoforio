@@ -5,7 +5,7 @@ import SectionHead from './SectionHead.astro';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
-const { name, university, major, semester, totalSemesters } = entry.data;
+const { name, university, major, semester, totalSemesters, gpa, gpaScale } = entry.data;
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
@@ -27,14 +27,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
           </div>
         </dl>
 
-        <!-- How far along the degree is: one tick per semester, the current one stamped in shu. -->
-        <div class="semester mt-10">
-          <p class="semester__count display" aria-hidden="true">
-            {pad(semester)}<span class="semester__of">/{pad(totalSemesters)}</span>
-          </p>
-          <div class="flex-1">
+        <!-- Two stat stamps: how far along the degree is (one tick per semester) and the GPA on its scale. -->
+        <div class="mt-10 grid gap-4 sm:grid-cols-2">
+          <div class="stat">
             <p class="label">Semester <span class="font-jp tracking-normal opacity-75" lang="ja">学期</span></p>
-            <ol class="semester__ticks mt-3" aria-label={`Semester ${semester} of ${totalSemesters}`}>
+            <p class="stat__value display" aria-hidden="true">
+              {pad(semester)}<span class="stat__of">/{pad(totalSemesters)}</span>
+            </p>
+            <ol class="semester__ticks" aria-label={`Semester ${semester} of ${totalSemesters}`}>
               {
                 Array.from({ length: totalSemesters }, (_, i) => (
                   <li
@@ -46,6 +46,15 @@ const pad = (n: number) => String(n).padStart(2, '0');
                 ))
               }
             </ol>
+          </div>
+          <div class="stat">
+            <p class="label">GPA <span class="font-jp tracking-normal opacity-75" lang="ja">成績</span></p>
+            <p class="stat__value display">
+              {gpa.toFixed(2)}<span class="stat__of">/{gpaScale.toFixed(2)}</span>
+            </p>
+            <div class="gpa__track" role="meter" aria-label="GPA" aria-valuemin={0} aria-valuemax={gpaScale} aria-valuenow={gpa}>
+              <span class="gpa__fill" style={`width: ${(gpa / gpaScale) * 100}%`}></span>
+            </div>
           </div>
         </div>
       </div>
@@ -113,22 +122,35 @@ const pad = (n: number) => String(n).padStart(2, '0');
     vertical-align: 0.1em;
   }
 
-  .semester {
+  /* stat stamps: label, a big shu figure over its scale, then a meter */
+  .stat {
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.1rem 1.4rem;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.1rem 1.3rem 1.3rem;
     border: 1px solid var(--color-ink);
     border-radius: 0.6rem;
   }
-  .semester__count {
-    font-size: clamp(3.5rem, 6vw, 5rem);
+  .stat__value {
+    font-size: clamp(3.25rem, 5vw, 4.5rem);
     color: var(--color-torii);
   }
-  .semester__of {
+  .stat__of {
     font-size: 0.4em;
     color: var(--color-ink);
     opacity: 0.7;
+  }
+  .gpa__track {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--color-rule);
+    overflow: hidden;
+  }
+  .gpa__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(to right, var(--color-ink) 85%, var(--color-torii));
   }
   .semester__ticks {
     display: grid;
