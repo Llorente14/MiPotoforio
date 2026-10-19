@@ -32,4 +32,20 @@ const profile = defineCollection({
   }),
 });
 
-export const collections = { profile };
+const projects = defineCollection({
+  loader: glob({ pattern: '*.mdx', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string().min(1),
+    summary: z.string().min(1),
+    stack: z.array(z.string().min(1)).min(1),
+    repoUrl: z.url(),
+    liveUrl: z.url().optional(),
+    cover: z.string().startsWith('/'),
+    coverAlt: z.string().min(1),
+    screenshots: z.array(z.object({ src: z.string().startsWith('/'), alt: z.string().min(1) })).default([]),
+    featuredOrder: z.number().int().positive(),
+    date: z.coerce.date(),
+  }),
+});
+
+export const collections = { profile, projects };
