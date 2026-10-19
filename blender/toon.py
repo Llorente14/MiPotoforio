@@ -244,7 +244,9 @@ def _toon_nodes(m):
     mix = nt.nodes.new("ShaderNodeMix")
     mix.data_type, mix.blend_type = "RGBA", "MULTIPLY"
     mix.inputs["Factor"].default_value = 1
-    mix.inputs[7].default_value = (*rgb(m.get("toon", "#ffffff")), 1)
+    base = rgb(m.get("toon", "#ffffff"))
+    lift = m.get("lift", 0.0)  # lighten toward white without changing the exported colour
+    mix.inputs[7].default_value = (*(c + (1 - c) * lift for c in base), 1)
     emit = nt.nodes.new("ShaderNodeEmission")
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     nt.links.new(diffuse.outputs[0], to_rgb.inputs[0])

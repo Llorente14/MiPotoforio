@@ -4,6 +4,7 @@ import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 
 import {
   BackSide,
   Box3,
+  Color,
   DataTexture,
   Mesh,
   MeshBasicMaterial,
@@ -54,7 +55,8 @@ function toonify(root: Object3D) {
   for (const mesh of meshes) {
     const src = mesh.material as MeshStandardMaterial;
     mesh.material = new MeshToonMaterial({
-      color: src.color,
+      // Skin is lifted a touch toward white, matching the stills.
+      color: src.name === 'Skin' ? src.color.clone().lerp(new Color('#ffffff'), 0.16) : src.color,
       map: src.map,
       gradientMap,
       transparent: src.transparent,

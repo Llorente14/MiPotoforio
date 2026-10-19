@@ -27,8 +27,9 @@ LINING = mat("Lining", "#e3e7f0")
 SHIRT = mat("Shirt", "#2f56a8")
 TIE = mat("Tie", "#c8323a")
 BAND = mat("HatBand", "#2f56a8")
-SKIN = mat("Skin", "#e2b28b")  # light sawo matang tan
-HAIR = mat("Hair", "#3a2c26")
+SKIN = mat("Skin", "#d8b594")  # sawo matang
+SKIN["lift"] = 0.16  # renders lift it toward white a little
+HAIR = mat("Hair", "#2e2420")
 GLOVE = mat("Glove", "#fbfbf8", rough=0.6)
 SILVER = mat("Silver", "#cfd4dc", rough=0.25, metal=1.0)
 CLOVER = mat("Clover", "#2f8a57")
@@ -155,27 +156,32 @@ for i, phi in enumerate(range(36, 332, 16)):
     rnd = ((i * 37) % 11) / 10  # deterministic 0..1 jitter
     sign = 1 if phi < 180 else -1  # sweep toward the back
     sweep = (6 + 10 * rnd) * sign
-    tip_theta = 104 + 22 * rnd
-    kick = 1.36 + 0.16 * ((i * 53) % 7) / 6  # the tip flicks outward, visible from the front
-    pts = [on_head(phi, 48, 1.02), on_head(phi + sweep * 0.3, 72, 1.12), on_head(phi + sweep * 0.7, 96, 1.22),
+    tip_theta = 94 + 12 * rnd  # short: the locks end around the ears
+    kick = 1.2 + 0.12 * ((i * 53) % 7) / 6  # the tip flicks outward, visible from the front
+    pts = [on_head(phi, 48, 1.02), on_head(phi + sweep * 0.3, 66, 1.1), on_head(phi + sweep * 0.7, 82, 1.16),
            on_head(phi + sweep, tip_theta, kick)]
     strand(pts, 0.031 - 0.008 * rnd, HAIR, taper=(1.0, 0.0))
 for i, phi in enumerate(range(52, 316, 24)):  # a shorter inner layer for volume between the long locks
     sign = 1 if phi < 180 else -1
-    strand([on_head(phi, 54, 1.02), on_head(phi + 6 * sign, 80, 1.14), on_head(phi + 12 * sign, 98 + 7 * (i % 3), 1.34)],
+    strand([on_head(phi, 54, 1.02), on_head(phi + 6 * sign, 80, 1.14), on_head(phi + 12 * sign, 88 + 5 * (i % 3), 1.22)],
            0.025, HAIR, taper=(1.0, 0.0))
 # fringe: clumps parted off-centre, sweeping hard toward his left, ragged lengths, tips curling off the brow
-for phi, tip, sw in ((-52, 90, 18), (-38, 82, 30), (-24, 87, 38), (-10, 80, 42), (4, 86, 42), (18, 79, 38),
-                     (32, 84, 32), (46, 80, 24), (58, 88, 16)):
+for phi, tip, sw in ((-52, 90, 18), (-38, 86, 28), (-24, 90, 32), (-10, 85, 34), (4, 90, 34), (18, 84, 32),
+                     (32, 88, 28), (46, 84, 22), (58, 90, 16)):
     strand([on_head(phi * 0.5, 36, 1.03), on_head(phi * 0.8 + sw * 0.25, 56, 1.09), on_head(phi + sw * 0.65, 72, 1.12),
-            on_head(phi + sw, tip, 1.2)], 0.024, HAIR, taper=(1.0, 0.0))
+            on_head(phi + sw, tip, 1.2)], 0.034, HAIR, taper=(1.0, 0.0))
+for phi, tip, sw in ((-40, 85, 8), (-27, 89, 10), (-14, 84, 12), (-1, 88, 12), (12, 83, 12), (25, 88, 10), (38, 84, 8)):
+    # a second, shorter layer of bangs filling the gaps so the fringe reads dense, as in the figure
+    strand([on_head(phi * 0.5, 40, 1.03), on_head(phi * 0.8 + sw * 0.25, 58, 1.08), on_head(phi + sw * 0.65, 70, 1.1),
+            on_head(phi + sw, tip, 1.14)], 0.032, HAIR, taper=(1.0, 0.0))
 for sx in (-1, 1):  # sideburns in front of the ears
-    strand([on_head(78 * sx, 62, 1.04), on_head(82 * sx, 90, 1.07), on_head(86 * sx, 114, 1.08)], 0.015, HAIR,
+    strand([on_head(78 * sx, 62, 1.04), on_head(82 * sx, 84, 1.07), on_head(84 * sx, 100, 1.08)], 0.015, HAIR,
            taper=(1.0, 0.0))
 
 # validation: clamp every hair vertex radially back inside the bounding ellipsoid if it pokes out
 bound = Vector((HEAD_R.x * HAIR_BOUND, HEAD_R.y * HAIR_BOUND, HEAD_R.z * HAIR_BOUND))
-hair_clamped = hair_total = 0
+hair_clamped = hair_total = hair_tucked = 0
+HAT_BRIM_Z, HAT_AXIS, HAT_INNER_R = 1.712, (0.01, 0.004), 0.078  # brim height, crown axis, a safe inner radius
 bpy.context.view_layer.update()
 for o in parts[hair_start:]:
     mw, mwi = o.matrix_world.copy(), o.matrix_world.inverted()
@@ -186,21 +192,32 @@ for o in parts[hair_start:]:
         if q > 1.0:
             v.co = mwi @ (HEAD_C + d / q)
             hair_clamped += 1
+        # above the brim the hair must stay inside the crown, or it shows through the hat and its band
+        w = mw @ v.co
+        # the brim plane tilts with the hat: higher at the front, lower on his left
+        brim_z = HAT_BRIM_Z - (w.y - HAT_AXIS[1]) * 0.105 - (w.x - HAT_AXIS[0]) * 0.122
+        if w.z > brim_z + 0.004:
+            r = Vector((w.x - HAT_AXIS[0], w.y - HAT_AXIS[1], 0))
+            if r.length > HAT_INNER_R:
+                w.xy = Vector(HAT_AXIS) + r.xy * (HAT_INNER_R / r.length)
+                v.co = mwi @ w
+                hair_tucked += 1
 
 # ---- top hat (white, blue band), tilted
 hat = []
 loft("Crown", [((0, 0, 0.0), 0.11, 0.102), ((0, 0, 0.11), 0.104, 0.097), ((0, 0, 0.205), 0.11, 0.103),
                ((0, 0, 0.214), 0.1, 0.094)], SUIT, n=40, sub=1)
 hat.append(cur())
-loft("Band", [((0, 0, 0.004), 0.1135, 0.1055), ((0, 0, 0.048), 0.1095, 0.1015)], BAND, n=40, sub=1)
+loft("Band", [((0, 0, 0.002), 0.113, 0.105), ((0, 0, 0.05), 0.109, 0.101)], BAND, n=48, sub=0)  # crisp: subdivision would shrink it into the crown
 hat.append(cur())
 loft("Brim", [((0, 0, -0.009), 0.196, 0.183), ((0.0, 0, 0.0), 0.204, 0.19), ((0, 0, 0.004), 0.198, 0.185),
               ((0, 0, -0.002), 0.112, 0.104)], SUIT, n=56, caps=(True, False), sub=1)
 hat.append(cur())
 pivot = bpy.data.objects.new("HatPivot", None)
 bpy.context.collection.objects.link(pivot)
-pivot.location = (0.012, 0.004, 1.74)
-pivot.rotation_euler = (math.radians(-8), math.radians(9), math.radians(4))
+pivot.location = (0.01, 0.004, 1.712)  # sits low, the brim just above the eyes
+pivot.rotation_euler = (math.radians(-6), math.radians(7), math.radians(3))
+pivot.scale = (1.1, 1.1, 1.06)  # wide enough to cover the crown of the head
 for h in hat:
     h.parent = pivot
 
@@ -293,7 +310,8 @@ bpy.context.view_layer.objects.active = card
 bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)  # keep the origin at the card centre
 
 print("SUMMARY vertices:", sum(len(o.data.vertices) for o in (kaito, card)))
-print(f"SUMMARY hair: {hair_clamped} of {hair_total} vertices clamped into the {HAIR_BOUND}x head ellipsoid")
+print(f"SUMMARY hair: {hair_clamped} of {hair_total} vertices clamped into the {HAIR_BOUND}x head ellipsoid, "
+      f"{hair_tucked} tucked inside the hat")
 
 export_and_render("kaito", cam_loc=(-0.36, -1.75, 0.62), target=(-0.05, 0.0, 0.5), lens=55, res=(1000, 1250),
                   outline=0.003, sun_rot=(48, 0, -35), skip_outline=("Card",))
