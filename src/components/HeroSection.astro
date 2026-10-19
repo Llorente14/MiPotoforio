@@ -1,45 +1,206 @@
 ---
 import { getEntry } from 'astro:content';
 import ModelSlot from './ModelSlot';
-import cardFront from '../assets/card/front.svg?url';
+import StripedDisc from './StripedDisc.astro';
+import cardArt from '../assets/card/front.svg?raw';
 
 const entry = await getEntry('profile', 'profile');
 if (!entry) throw new Error('Profile content entry "profile" is missing');
-const { name } = entry.data;
+const { name, tagline, coordinates } = entry.data;
+const [first, ...rest] = name.split(' ');
+const last = rest.pop() ?? '';
+const middle = rest.join(' ');
+
+// Ink grass along the bottom edge: deterministic blades so every build draws the same meadow.
+const blades = Array.from({ length: 140 }, (_, i) => {
+  const x = (i / 140) * 1200 + ((i * 37) % 11) - 5;
+  const h = 26 + ((i * 53) % 34) + (i % 9 === 0 ? 22 : 0);
+  const lean = ((i * 29) % 13) - 6;
+  return `M${(x - 4).toFixed(1)} 120 Q${(x + lean * 0.4).toFixed(1)} ${120 - h * 0.6} ${(x + lean).toFixed(1)} ${120 - h} Q${(x + lean * 0.2 + 2).toFixed(1)} ${120 - h * 0.5} ${(x + 5).toFixed(1)} 120Z`;
+}).join('');
 ---
 
 <!-- data-sky="night" re-scopes the tokens so the Hero stays Night under every Sky Theme. -->
-<section
-  id="hero"
-  data-sky="night"
-  aria-labelledby="hero-heading"
-  class="relative h-screen overflow-hidden text-center text-ink"
->
+<section id="hero" data-sky="night" aria-labelledby="hero-heading" class="hero relative h-svh min-h-[36rem] overflow-hidden text-ink">
   <!-- Night sky of the Hero. The Card Transition fades it out to reveal the visitor's Sky Theme. -->
-  <div data-hero-sky aria-hidden="true" class="absolute inset-0 bg-paper" style="background-image: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));">
-    <div class="absolute right-[14%] top-[12%] size-16 rounded-full" style="background: var(--sky-body); box-shadow: 0 0 4rem 1.5rem var(--sky-body-glow);"></div>
+  <div data-hero-sky aria-hidden="true" class="hero__sky absolute inset-0 bg-paper">
+    <StripedDisc class="hero__moon" bands={11} />
+    <p class="tategaki hero__epithet">月下の奇術師</p>
   </div>
 
-  <div data-hero-content class="relative z-10 flex h-full flex-col items-center justify-center gap-2 px-4">
-    <h1 id="hero-heading" class="font-display text-3xl">{name}</h1>
-    <p class="text-xl">Informatics Engineering student building things for the web.</p>
-    <p class="font-jp" aria-hidden="true">夜空</p>
-    <div class="mt-4 w-[min(80vw,24rem)]">
-      <ModelSlot client:visible priority id="kaito" alt="Low-poly 3D Kaito Kid in a white suit holding a card" />
+  <div class="relative mx-auto grid h-full max-w-[90rem] grid-cols-12 items-start gap-x-6 px-4 pt-24 md:items-center md:pt-20 pb-[16vh] md:px-8">
+    <div data-hero-content class="relative z-10 col-span-12 md:col-span-7 lg:col-span-6">
+      <p class="label flex items-center gap-3 opacity-80">
+        <span>File 01</span><span aria-hidden="true" class="h-px w-10 bg-current opacity-50"></span><span>Calling card</span>
+        <span class="font-jp text-xs tracking-normal" lang="ja" aria-hidden="true">怪盗キッド</span>
+      </p>
+      <h1 id="hero-heading" class="display hero__name mt-5">
+        <span class="block">{first}</span>
+        {' '}
+        <span class="block text-torii">{middle}</span>
+        {' '}
+        <span class="block">{last}</span>
+      </h1>
+      <p class="hero__tagline mt-6 max-w-[30ch]">{tagline}</p>
+      <dl class="label mt-8 flex flex-wrap gap-x-8 gap-y-2 opacity-75">
+        <div><dt class="sr-only">Campus</dt><dd>UNTAR · Jakarta</dd></div>
+        <div><dt class="sr-only">Coordinates</dt><dd>{coordinates}</dd></div>
+      </dl>
+      <p class="label hero__cue mt-10 hidden md:flex items-center gap-3" aria-hidden="true">
+        <span>Scroll</span><span class="hero__cue-line"></span><span class="font-jp text-xs tracking-normal">カードを引く</span>
+      </p>
+    </div>
+    <div data-hero-kaito class="hero__kaito col-span-12 md:col-span-5 lg:col-span-6">
+      <ModelSlot client:visible priority id="kaito" aspect="4 / 5" alt="Cel-shaded 3D Kaito Kid in his white suit and top hat, holding up a calling card" />
     </div>
   </div>
 
-  <!-- The thrown card. Decorative; the transition script animates it. -->
-  <img
-    data-hero-card
-    src={cardFront}
-    alt=""
-    aria-hidden="true"
-    width="256"
-    height="358"
-    class="pointer-events-none absolute left-[58%] top-[55%] z-20 w-24 -translate-x-1/2 -translate-y-1/2 opacity-0"
-  />
+  <svg data-hero-grass aria-hidden="true" class="hero__grass" viewBox="0 0 1200 120" preserveAspectRatio="none">
+    <path d={blades} />
+    <rect y="112" width="1200" height="8" />
+  </svg>
+
+  <!-- The thrown card. Decorative; the transition script grows it from Kaito's hand into a page. -->
+  <div data-hero-card aria-hidden="true" class="hero-card">
+    <div class="hero-card__page">
+      <span class="hero-card__index">A<br />♣</span>
+      <span class="hero-card__index hero-card__index--end">A<br />♣</span>
+    </div>
+    <div data-hero-card-art class="hero-card__art" set:html={cardArt} />
+  </div>
 </section>
+
+<style>
+  .hero__sky {
+    background-image: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+  }
+  .hero :global(.hero__moon) {
+    position: absolute;
+    top: 15%;
+    right: 9%;
+    width: min(38vw, 32rem);
+    color: var(--sky-body);
+    opacity: 0.92;
+  }
+  .hero__epithet {
+    position: absolute;
+    top: 18%;
+    right: 2.2%;
+    font-size: clamp(1rem, 1.6vw, 1.5rem);
+    letter-spacing: 0.4em;
+    opacity: 0.55;
+  }
+  .hero__name {
+    font-size: clamp(3.75rem, 10.5vw, 10rem);
+  }
+  .hero__tagline {
+    font-family: var(--font-jp);
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    line-height: 1.6;
+  }
+  .hero__cue-line {
+    display: inline-block;
+    width: 4rem;
+    height: 1px;
+    background: currentColor;
+    transform-origin: left;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__cue-line {
+      animation: cue 2.4s cubic-bezier(0.6, 0, 0.2, 1) infinite;
+    }
+  }
+  @keyframes cue {
+    0% { transform: scaleX(0); }
+    50% { transform: scaleX(1); transform-origin: left; }
+    51% { transform-origin: right; }
+    100% { transform: scaleX(0); transform-origin: right; }
+  }
+  .hero__kaito {
+    position: relative;
+    z-index: 30;
+    align-self: end;
+    top: 13vh;
+  }
+  @media (max-width: 767px) {
+    .hero__kaito {
+      position: absolute;
+      top: auto;
+      right: -14%;
+      bottom: -6vh;
+      width: 88%;
+    }
+    .hero :global(.hero__moon) {
+      top: auto;
+      bottom: 12vh;
+      right: -8%;
+      width: 60vw;
+    }
+    .hero__epithet {
+      display: none;
+    }
+  }
+  .hero__grass {
+    position: absolute;
+    inset: auto 0 -1px;
+    z-index: 40;
+    width: 100%;
+    height: 17vh;
+    fill: #080b14;
+    pointer-events: none;
+  }
+
+  /* Card: a CSS-built washi page (sharp at any size) under the SVG art, which fades as the card grows. */
+  .hero-card {
+    position: absolute;
+    z-index: 25;
+    left: 0;
+    top: 0;
+    width: 7rem;
+    height: 9.8rem;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 0.55rem;
+    background: #f2ebd9;
+    color: #17140f;
+    box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.45);
+    will-change: transform, width, height;
+  }
+  .hero-card__page {
+    position: absolute;
+    inset: clamp(0.35rem, 1.2%, 1.25rem);
+    border: 2px solid currentColor;
+    border-radius: inherit;
+    outline: 1px solid currentColor;
+    outline-offset: -0.5rem;
+  }
+  .hero-card__index {
+    position: absolute;
+    top: 0.9rem;
+    left: 1.1rem;
+    font-family: var(--font-display);
+    font-stretch: 62%;
+    font-weight: 800;
+    font-size: clamp(1.25rem, 3vw, 3rem);
+    line-height: 0.95;
+    text-align: center;
+  }
+  .hero-card__index--end {
+    top: auto;
+    left: auto;
+    right: 1.1rem;
+    bottom: 0.9rem;
+    transform: rotate(180deg);
+  }
+  .hero-card__art {
+    position: absolute;
+    inset: 0;
+  }
+  .hero-card__art :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>
 
 <script>
   import gsap from 'gsap';
@@ -52,10 +213,13 @@ const { name } = entry.data;
   const hero = document.querySelector<HTMLElement>('#hero');
   const sky = hero?.querySelector<HTMLElement>('[data-hero-sky]');
   const content = hero?.querySelector<HTMLElement>('[data-hero-content]');
+  const kaito = hero?.querySelector<HTMLElement>('[data-hero-kaito]');
+  const grass = hero?.querySelector<HTMLElement>('[data-hero-grass]');
   const card = hero?.querySelector<HTMLElement>('[data-hero-card]');
+  const art = hero?.querySelector<HTMLElement>('[data-hero-card-art]');
 
   // Reduced motion: no smooth scrolling, no pinning, no transition. About is reached by normal scroll.
-  if (hero && sky && content && card && !reducedMotion) {
+  if (hero && sky && content && kaito && grass && card && art && !reducedMotion) {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis();
@@ -63,36 +227,56 @@ const { name } = entry.data;
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Scale that makes the 96px-wide card cover the whole viewport.
-    const coverScale = () => Math.max(window.innerWidth / card.offsetWidth, window.innerHeight / card.offsetHeight) * 1.3;
+    // Where Kaito's fingers hold the card, in Hero coordinates (the figure's hand sits ~30% in, 31% down).
+    const hand = () => {
+      const h = hero.getBoundingClientRect();
+      const k = kaito.getBoundingClientRect();
+      const w = Math.max(k.width * 0.13, 64);
+      return { left: k.left - h.left + k.width * 0.3 - w / 2, top: k.top - h.top + k.height * 0.31 - w * 0.7, width: w, height: w * 1.4 };
+    };
+    const vw = () => hero.clientWidth;
+    const vh = () => hero.clientHeight;
 
     if (allow3d) {
-      // Desktop: pin the Hero; the card flies at the camera, fills the screen, then opens onto the new sky.
+      // Desktop, pinned. The sketch, in four beats: the card leaves his fingers, drifts under the text,
+      // spreads into a wide landscape page, then covers the screen and hands over to the page below.
       const tl = gsap.timeline({
-        defaults: { ease: 'none' },
+        defaults: { ease: 'power2.inOut' },
         scrollTrigger: {
           trigger: hero,
           start: 'top top',
-          end: '+=100%',
+          end: '+=160%',
           pin: true,
-          scrub: true,
+          scrub: 0.6,
           invalidateOnRefresh: true,
           onUpdate: (self) => (cardProgress.value = self.progress),
         },
       });
-      tl.to(card, { opacity: 1, duration: 0.05 }, 0)
-        .to(card, { left: '50%', top: '50%', rotation: 540, scale: coverScale, duration: 0.5 }, 0)
-        .to(content, { opacity: 0, duration: 0.15 }, 0.4)
-        .to(sky, { opacity: 0, duration: 0.3 }, 0.55)
-        .to(card, { opacity: 0, scale: () => coverScale() * 1.6, duration: 0.3 }, 0.7);
+      tl.set(card, { left: () => hand().left, top: () => hand().top, width: () => hand().width, height: () => hand().height, rotation: -14 }, 0)
+        .to(card, { opacity: 1, duration: 0.04, ease: 'none' }, 0.02)
+        // 1. out of his hand, toward the text
+        .to(card, { left: () => vw() * 0.36, top: () => vh() * 0.42, width: () => vw() * 0.16, height: () => vw() * 0.224, rotation: 8, duration: 0.22 }, 0.04)
+        // 2. a wide landscape page along the bottom; the art gives way to the bare washi page
+        .to(card, { left: () => vw() * 0.06, top: () => vh() * 0.52, width: () => vw() * 0.88, height: () => vh() * 0.62, rotation: -2, borderRadius: 14, duration: 0.3 }, 0.26)
+        .to(art, { opacity: 0, duration: 0.07, ease: 'none' }, 0.27)
+        .to(content, { opacity: 0, y: -40, duration: 0.2 }, 0.3)
+        .to(grass, { opacity: 0, duration: 0.15 }, 0.36)
+        // 3. it rises and covers the screen; Kaito stays above it
+        .to(card, { left: 0, top: 0, width: () => vw(), height: () => vh(), rotation: 0, borderRadius: 0, duration: 0.24 }, 0.56)
+        .to(sky, { opacity: 0, duration: 0.1, ease: 'none' }, 0.8)
+        // 4. Kaito bows out, the page settles into the About section
+        .to(kaito, { opacity: 0, y: -60, duration: 0.14 }, 0.8)
+        .to(card, { opacity: 0, duration: 0.08, ease: 'none' }, 0.92);
     } else {
-      // Phones and tablets: no pinning, no 3D; a simple crossfade as the Hero scrolls away.
+      // Phones and tablets: no pinning, no 3D; the card slips out and grows as the Hero scrolls away.
       gsap
         .timeline({
           defaults: { ease: 'none' },
-          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
         })
-        .to(card, { opacity: 0.9, left: '50%', top: '50%', duration: 0.5 }, 0)
+        .set(card, { left: () => hand().left, top: () => hand().top, width: () => hand().width, height: () => hand().height, rotation: -14 }, 0)
+        .to(card, { opacity: 0.95, left: () => vw() * 0.08, top: () => vh() * 0.45, width: () => vw() * 0.84, height: () => vh() * 0.5, rotation: 0, duration: 0.5 }, 0)
+        .to(art, { opacity: 0, duration: 0.2 }, 0.3)
         .to(sky, { opacity: 0, duration: 0.5 }, 0.3)
         .to(card, { opacity: 0, duration: 0.3 }, 0.7);
     }

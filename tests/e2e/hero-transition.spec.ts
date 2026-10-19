@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 const cardOpacity = (page: import('@playwright/test').Page) =>
   page.locator('[data-hero-card]').evaluate((el) => Number(getComputedStyle(el).opacity));
 
-test('desktop: card covers the viewport mid-transition, About follows, scrolling back restores the Hero', async ({
+test("desktop: the card grows from Kaito's hand to cover the viewport, About follows, scrolling back restores the Hero", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop');
@@ -11,12 +11,19 @@ test('desktop: card covers the viewport mid-transition, About follows, scrolling
   await expect(page.locator('[data-model-slot="kaito"] canvas')).toHaveCount(1, { timeout: 15_000 });
   const vh = page.viewportSize()!.height;
 
-  // Mid-transition the card is large enough to cover the whole viewport.
-  await page.evaluate((y) => window.scrollTo(0, y), vh * 0.55);
+  const card = page.locator('[data-hero-card]');
+  const width = async () => (await card.boundingBox())!.width;
+
+  // Early on the card has just left his fingers: visible and still small.
+  await page.evaluate((y) => window.scrollTo(0, y), vh * 0.15);
   await expect.poll(() => cardOpacity(page)).toBeGreaterThan(0.8);
-  const box = (await page.locator('[data-hero-card]').boundingBox())!;
-  expect(box.width).toBeGreaterThanOrEqual(page.viewportSize()!.width * 0.95);
-  expect(box.height).toBeGreaterThanOrEqual(vh * 0.95);
+  expect(await width()).toBeLessThan(page.viewportSize()!.width * 0.3);
+
+  // Late in the transition it has spread into a page that covers the whole viewport.
+  await page.evaluate((y) => window.scrollTo(0, y), vh * 1.35);
+  await expect.poll(width).toBeGreaterThanOrEqual(page.viewportSize()!.width * 0.95);
+  expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(vh * 0.95);
+  expect(await cardOpacity(page)).toBeGreaterThan(0.8);
 
   // Past the transition: card gone, About reachable.
   await page.evaluate(() => document.querySelector('#about')!.scrollIntoView());
