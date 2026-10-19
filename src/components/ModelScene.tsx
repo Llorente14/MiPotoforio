@@ -25,7 +25,7 @@ const INK = '#17140f';
 
 // Three hard tones (shadow, mid, lit): the same cel steps as the Blender stills.
 const gradientMap = (() => {
-  const tex = new DataTexture(new Uint8Array([110, 190, 255]), 3, 1, RedFormat);
+  const tex = new DataTexture(new Uint8Array([100, 172, 232]), 3, 1, RedFormat);
   tex.minFilter = tex.magFilter = NearestFilter;
   tex.needsUpdate = true;
   return tex;
@@ -149,8 +149,8 @@ export default function ModelScene({ id, reducedMotion }: { id: ModelId; reduced
       // Wheel and touch scrolling must always reach the page.
       style={{ touchAction: 'pan-y' }}
     >
-      <ambientLight intensity={1.1} />
-      <directionalLight position={[-3, 5, 4]} intensity={2.2} />
+      <ambientLight intensity={0.75} />
+      <directionalLight position={[-3, 5, 4]} intensity={1.6} />
       <Wake enabled={!reducedMotion} />
       <Suspense fallback={null}>
         <Bounds fit clip margin={f.margin} maxDuration={reducedMotion ? 0 : 0.6}>

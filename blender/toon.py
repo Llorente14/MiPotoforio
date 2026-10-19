@@ -237,10 +237,10 @@ def _toon_nodes(m):
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     ramp.color_ramp.interpolation = "CONSTANT"
     stops = ramp.color_ramp.elements
-    stops[0].position, stops[0].color = 0.0, (0.52, 0.52, 0.68, 1)  # cool ink-blue shadow
-    stops[1].position, stops[1].color = 0.22, (0.8, 0.8, 0.88, 1)
+    stops[0].position, stops[0].color = 0.0, (0.48, 0.48, 0.62, 1)  # cool ink-blue shadow
+    stops[1].position, stops[1].color = 0.22, (0.74, 0.74, 0.82, 1)
     hi = stops.new(0.5)
-    hi.color = (1, 1, 1, 1)
+    hi.color = (0.92, 0.92, 0.92, 1)  # lit, but never blown out
     mix = nt.nodes.new("ShaderNodeMix")
     mix.data_type, mix.blend_type = "RGBA", "MULTIPLY"
     mix.inputs["Factor"].default_value = 1
@@ -325,10 +325,10 @@ def export_and_render(name, cam_loc, target, lens=50, res=(1000, 1250), outline=
     world.use_nodes = True
     bg = world.node_tree.nodes["Background"]
     bg.inputs["Color"].default_value = (1, 1, 1, 1)
-    bg.inputs["Strength"].default_value = 0.25
+    bg.inputs["Strength"].default_value = 0.18
     scene.world = world
     sun = bpy.data.objects.new("Sun", bpy.data.lights.new("Sun", "SUN"))
-    sun.data.energy = 3.6
+    sun.data.energy = 2.7
     sun.data.use_shadow = False  # shading by normal only: clean anime terminators, no shadow-map jaggies
     sun.rotation_euler = tuple(math.radians(a) for a in sun_rot)
     bpy.context.collection.objects.link(sun)
