@@ -1,29 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">
-  <!-- Kaito Kid's calling card: plain white stock with his doodle in black line. -->
-  <rect width="1000" height="1400" rx="48" fill="#fbfaf6" />
-  <rect x="1.5" y="1.5" width="997" height="1397" rx="47" fill="none" stroke="#d9d5cb" stroke-width="3" />
+  <!-- Kaito Kid's calling card: the ace of clubs with his doodle (top hat, monocle and grin) in black line. -->
+  <defs>
+    <symbol id="kc-club" viewBox="-50 -52 100 104">
+      <circle cx="0" cy="-24" r="22" />
+      <circle cx="-24" cy="8" r="22" />
+      <circle cx="24" cy="8" r="22" />
+      <path d="M-5 4 C-4 26 -12 40 -24 50 H24 C12 40 4 26 5 4 Z" />
+    </symbol>
+  </defs>
 
-  <g fill="none" stroke="#141210" stroke-linecap="round" stroke-linejoin="round" transform="translate(500 700)">
-    <!-- top hat, tilted a touch to the right -->
-    <g transform="rotate(6)">
-      <path d="M-128 -150 L-118 -372 Q0 -392 118 -372 L128 -150" stroke-width="16" />
-      <path d="M-118 -372 Q0 -352 118 -372" stroke-width="10" />
-      <path d="M-127 -196 Q0 -176 127 -196 L128 -150 Q0 -130 -128 -150 Z" fill="#141210" stroke-width="10" />
-      <path d="M-250 -140 Q-210 -112 0 -108 Q210 -112 250 -140 Q262 -150 246 -160 Q200 -172 128 -160 M-128 -160 Q-200 -172 -246 -160 Q-262 -150 -250 -140" stroke-width="16" />
+  <rect width="1000" height="1400" rx="44" fill="#ffffff" />
+  <rect x="1.5" y="1.5" width="997" height="1397" rx="43" fill="none" stroke="#d6d3cc" stroke-width="3" />
+
+  <!-- corner indices: serif A over a club, repeated upside down -->
+  <g fill="#111111">
+    <text x="84" y="152" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="150">A</text>
+    <use href="#kc-club" x="44" y="170" width="80" height="84" />
+    <g transform="rotate(180 500 700)">
+      <text x="84" y="152" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="150">A</text>
+      <use href="#kc-club" x="44" y="170" width="80" height="84" />
     </g>
-    <!-- left eye: a sly arc -->
-    <path d="M-150 -18 Q-108 -52 -62 -20" stroke-width="18" />
-    <!-- monocle over the right eye, cord swinging down to a clover -->
-    <circle cx="104" cy="-12" r="74" stroke-width="18" />
-    <path d="M90 -14 Q106 -30 124 -12" stroke-width="12" />
-    <path d="M168 26 Q236 120 182 214" stroke-width="7" />
-    <g fill="#141210" stroke="none" transform="translate(178 236)">
-      <circle cx="0" cy="-15" r="14" /><circle cx="-14" cy="5" r="14" /><circle cx="14" cy="5" r="14" />
-      <path d="M-3 4 L-6 30 L6 30 L3 4 Z" />
-    </g>
-    <!-- the grin -->
-    <path d="M-196 82 Q-20 126 196 70 Q140 252 -10 258 Q-150 252 -196 82 Z" fill="#fbfaf6" stroke-width="18" />
-    <path d="M-182 112 Q0 150 186 102" stroke-width="7" />
-    <path d="M-120 108 L-110 222 M-60 120 L-56 248 M0 126 L0 256 M60 120 L56 248 M120 106 L110 226" stroke-width="7" />
   </g>
+
+  <g fill="none" stroke="#111111" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- top hat: tall crown, band line, wide brim -->
+    <path d="M335 768 L335 433 L605 433 L605 766" />
+    <path d="M335 694 L605 694" />
+    <path d="M190 772 Q470 780 742 758" />
+    <!-- monocle cord hanging from the brim to a small weight -->
+    <path d="M214 776 L214 928" stroke-width="10" />
+    <!-- monocle -->
+    <circle cx="560" cy="878" r="84" />
+  </g>
+  <path d="M188 970 L214 922 L240 970 Z" fill="#111111" />
+  <!-- the eye behind the monocle: a dark wedge under the brim -->
+  <path d="M570 812 L692 796 L688 822 Q642 846 606 848 Z" fill="#111111" />
+  <!-- the grin, drawn over the monocle -->
+  <path d="M340 888 Q520 884 676 840 Q650 962 486 972 Q384 970 340 888 Z" fill="#ffffff" stroke="#111111" stroke-width="16" stroke-linejoin="round" />
+  <path d="M398 900 L410 960 M452 898 L456 970 M506 892 L506 972 M560 884 L556 966 M612 870 L602 950" stroke="#111111" stroke-width="10" stroke-linecap="round" />
 </svg>

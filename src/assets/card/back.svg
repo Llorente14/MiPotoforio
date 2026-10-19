@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">
-  <!-- The back of the calling card is plain white too, with a faint mark. -->
-  <rect width="1000" height="1400" rx="48" fill="#fbfaf6" />
-  <rect x="1.5" y="1.5" width="997" height="1397" rx="47" fill="none" stroke="#d9d5cb" stroke-width="3" />
-  <g fill="none" stroke="#cfcac0" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" transform="translate(500 700) scale(0.4)">
-    <path d="M-128 -150 L-118 -372 Q0 -392 118 -372 L128 -150 M-250 -140 Q0 -100 250 -140" />
-    <circle cx="104" cy="-12" r="74" />
-    <path d="M-196 82 Q-20 126 196 70 Q140 252 -10 258 Q-150 252 -196 82 Z" />
+  <!-- Back of the calling card: plain white with a faint hat. -->
+  <rect width="1000" height="1400" rx="44" fill="#ffffff" />
+  <rect x="1.5" y="1.5" width="997" height="1397" rx="43" fill="none" stroke="#d6d3cc" stroke-width="3" />
+  <g fill="none" stroke="#d9d6cf" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" transform="translate(500 700) scale(0.45) translate(-466 -700)">
+    <path d="M335 768 L335 433 L605 433 L605 766 M335 694 L605 694 M190 772 Q470 780 742 758" />
   </g>
 </svg>
