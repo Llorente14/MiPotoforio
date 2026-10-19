@@ -1,21 +1,24 @@
 ---
-// Decorative sky layer: gradient + sun/moon + stars + clouds, pure CSS/SVG (no WebGL).
-const stars = Array.from({ length: 40 }, (_, i) => ({
+// Decorative sky layer: washi gradient, stars, distant hills and paper grain. Pure CSS/SVG (no WebGL).
+// The striped sun/moon lives in the Sections (Hero, Conan, footer), not here, so it never collides with text.
+
+const stars = Array.from({ length: 36 }, (_, i) => ({
   x: (i * 37 + 11) % 100,
-  y: (i * 53 + 7) % 60,
-  r: 0.15 + ((i * 7) % 5) * 0.06,
+  y: (i * 53 + 7) % 55,
+  r: 0.12 + ((i * 7) % 5) * 0.05,
 }));
 ---
 
 <div class="sky" aria-hidden="true">
-  <div class="sky__body"></div>
   <svg class="sky__stars" viewBox="0 0 100 100" preserveAspectRatio="none">
-    {stars.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#fff" />)}
+    {stars.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#ece4d0" />)}
   </svg>
-  <div class="sky__cloud" style="top: 14%; left: 8%; width: 12rem"></div>
-  <div class="sky__cloud" style="top: 26%; left: 62%; width: 16rem"></div>
-  <div class="sky__cloud" style="top: 8%; left: 40%; width: 9rem"></div>
+  <svg class="sky__hills" viewBox="0 0 1200 200" preserveAspectRatio="none">
+    <path d="M0 140 L120 104 L210 122 L330 70 L420 96 L520 60 L600 84 L700 52 L820 98 L930 76 L1040 110 L1200 88 V200 H0Z" opacity="0.55" />
+    <path d="M0 168 Q180 128 360 150 T720 140 T1200 150 V200 H0Z" />
+  </svg>
 </div>
+<div class="grain" aria-hidden="true"></div>
 
 <style>
   .sky {
@@ -24,16 +27,7 @@ const stars = Array.from({ length: 40 }, (_, i) => ({
     z-index: -1;
     pointer-events: none;
     background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
-  }
-  .sky__body {
-    position: absolute;
-    top: 12%;
-    right: 14%;
-    width: 5rem;
-    height: 5rem;
-    border-radius: 50%;
-    background: var(--sky-body);
-    box-shadow: 0 0 4rem 1.5rem var(--sky-body-glow);
+    transition: background 0.5s ease;
   }
   .sky__stars {
     position: absolute;
@@ -42,18 +36,26 @@ const stars = Array.from({ length: 40 }, (_, i) => ({
     height: 100%;
     opacity: var(--sky-stars);
   }
-  .sky__cloud {
+  .sky__hills {
     position: absolute;
-    height: 3rem;
-    border-radius: 999px;
-    background: var(--sky-cloud);
-    opacity: var(--sky-clouds);
-    filter: blur(2px);
+    inset: auto 0 0;
+    width: 100%;
+    height: 22vh;
+    fill: var(--sky-hills);
+    opacity: 0.6;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .sky__stars,
-    .sky__cloud {
-      transition: opacity 0.4s ease;
-    }
+  /* Washi fibre: fixed turbulence noise multiplied over everything. */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.28 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  :global([data-sky="night"]) .grain {
+    mix-blend-mode: screen;
+    opacity: 0.08;
   }
 </style>

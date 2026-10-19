@@ -1,0 +1,29 @@
+---
+// The site's signature motif: a solid disc whose lower half breaks into horizontal bands,
+// like a woodblock sun printed through a slatted screen. Colour follows `currentColor`.
+interface Props {
+  class?: string;
+  // Number of bands in the lower half.
+  bands?: number;
+}
+
+const { class: className, bands = 10 } = Astro.props;
+const id = `disc-${Math.random().toString(36).slice(2, 8)}`;
+
+// Bands get thinner and gaps wider toward the bottom edge.
+const rects: { y: number; h: number }[] = [{ y: 0, h: 104 }];
+let y = 108;
+for (let i = 0; i < bands; i++) {
+  const t = i / bands;
+  const h = 9 * (1 - t) + 1.5;
+  rects.push({ y, h });
+  y += h + 2.5 + 6 * t;
+}
+---
+
+<svg viewBox="0 0 200 200" class={className} aria-hidden="true" fill="currentColor">
+  <clipPath id={id}><circle cx="100" cy="100" r="100" /></clipPath>
+  <g clip-path={`url(#${id})`}>
+    {rects.map((r) => <rect x="0" y={r.y} width="200" height={r.h} />)}
+  </g>
+</svg>

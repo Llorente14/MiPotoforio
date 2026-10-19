@@ -63,7 +63,7 @@ export default function SakuraParticles() {
       ctx.globalAlpha = alpha;
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
-      ctx.fillStyle = '#f4b6c2';
+      ctx.fillStyle = '#e7a3b0';
       ctx.beginPath();
       ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
       ctx.fill();

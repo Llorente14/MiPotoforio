@@ -1,27 +1,33 @@
 @import "tailwindcss";
 
 /* Self-hosted fonts: no third-party requests on the critical path. */
-@import "@fontsource-variable/fraunces/wght.css";
-@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource/zen-kaku-gothic-new/latin-400.css";
+@import "@fontsource/zen-kaku-gothic-new/latin-700.css";
 
-/* Design tokens. Day (washi) palette is the default; Sky Theme switches via [data-sky]. */
+/*
+  Woodblock print on washi: sumi ink, shu (vermilion seal) and ai (indigo).
+  Day is the default; the Sky Theme switches via [data-sky]. The Hero re-scopes itself to Night.
+*/
 :root {
-  --color-paper: #f6efe0;
-  --color-ink: #1f1a17;
-  --color-torii: #c8362b;
-  --color-sakura: #f4b6c2;
+  --color-paper: #ece4d0;
+  --color-ink: #17140f;
+  --color-torii: #b2301b;
+  --color-sakura: #e7a3b0;
+  --color-ai: #141c30;
+  --color-moss: #6b6943;
+  --color-kincha: #a57a2c;
+  --color-rule: color-mix(in srgb, var(--color-ink) 22%, transparent);
 
-  /* Sky gradient stops (top to bottom) and objects, used by SkyBackground. */
-  --sky-top: #8fc7ef;
-  --sky-bottom: #f6efe0;
-  --sky-body: #ffd95a;
-  --sky-body-glow: rgb(255 217 90 / 0.45);
-  --sky-cloud: rgb(255 255 255 / 0.85);
+  /* Sky gradient stops (top to bottom) and the striped sun/moon disc, used by SkyBackground. */
+  --sky-top: #e3d8bd;
+  --sky-bottom: #ece4d0;
+  --sky-body: #c23a22;
   --sky-stars: 0;
-  --sky-clouds: 1;
+  --sky-hills: #cfc3a1;
 
-  --font-display: "Fraunces Variable", "Shippori Mincho", serif;
-  --font-body: "Inter Variable", system-ui, sans-serif;
+  --font-display: "Archivo Variable", "Arial Narrow", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
   --font-jp: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
 
   --text-sm: 0.875rem;
@@ -29,7 +35,7 @@
   --text-lg: 1.25rem;
   --text-xl: 1.75rem;
   --text-2xl: 2.5rem;
-  --text-3xl: 3.75rem;
+  --text-3xl: clamp(2.75rem, 6vw, 5.5rem);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -42,29 +48,27 @@
 
 /* Sky Theme: <html data-sky> switches the page; the Hero sets data-sky="night" on itself to stay Night. */
 [data-sky="dusk"] {
-  --color-paper: #3a2a45;
-  --color-ink: #fbe7d6;
-  --color-torii: #ff7b5c;
-  --sky-top: #3b2d5e;
-  --sky-bottom: #86465c;
-  --sky-body: #ffb36b;
-  --sky-body-glow: rgb(255 140 90 / 0.5);
-  --sky-cloud: rgb(255 170 140 / 0.45);
-  --sky-stars: 0.35;
-  --sky-clouds: 0.8;
+  --color-paper: #d3c7a2;
+  --color-ink: #1b1810;
+  --color-torii: #8a2a16;
+  --sky-top: #a99c72;
+  --sky-bottom: #cfc29b;
+  --sky-body: #a57a2c;
+  --sky-stars: 0;
+  --sky-hills: #8d8360;
 }
 
 [data-sky="night"] {
-  --color-paper: #0f1430;
-  --color-ink: #e9ecff;
-  --color-torii: #ff6a5c;
-  --sky-top: #05081c;
-  --sky-bottom: #1b2350;
-  --sky-body: #eef1ff;
-  --sky-body-glow: rgb(200 210 255 / 0.35);
-  --sky-cloud: rgb(255 255 255 / 0);
+  --color-paper: #121a2e;
+  --color-ink: #ece4d0;
+  --color-torii: #e8735a;
+  --color-sakura: #d98f9e;
+  --color-rule: color-mix(in srgb, var(--color-ink) 26%, transparent);
+  --sky-top: #0b1122;
+  --sky-bottom: #1a2440;
+  --sky-body: #ece4d0;
   --sky-stars: 1;
-  --sky-clouds: 0;
+  --sky-hills: #212c4b;
 }
 
 @theme inline {
@@ -72,6 +76,10 @@
   --color-ink: var(--color-ink);
   --color-torii: var(--color-torii);
   --color-sakura: var(--color-sakura);
+  --color-ai: var(--color-ai);
+  --color-moss: var(--color-moss);
+  --color-kincha: var(--color-kincha);
+  --color-rule: var(--color-rule);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-jp: var(--font-jp);
@@ -82,11 +90,68 @@ html {
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--text-base);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-torii);
-  outline-offset: 3px;
+  outline: 2px solid var(--color-torii);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--color-torii);
+  color: var(--color-paper);
+}
+
+/* Condensed display voice: headlines, wordmark, numerals. */
+.display {
+  font-family: var(--font-display);
+  font-stretch: 62%;
+  font-weight: 800;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Small tracked caps: kickers, nav labels, metadata. */
+.label {
+  font-family: var(--font-display);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Underlined label link, like a caption on a print. */
+.label-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.45em;
+  text-decoration-color: var(--color-rule);
+  transition: text-decoration-color 0.2s ease;
+}
+.label-link:hover,
+.label-link[aria-pressed="true"],
+.label-link[aria-current="page"] {
+  text-decoration-color: currentColor;
+}
+
+/* Vertical Japanese decoration (tategaki). */
+.tategaki {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-jp);
+  line-height: 1;
+}
+
+/* Section kicker: "02 / 学  CURRENT LEARNING". */
+.kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
 }
 
 /* Section entrance motion (classes are only added when motion is allowed). */
@@ -98,6 +163,6 @@ html {
   opacity: 1;
   transform: none;
   transition:
-    opacity 0.6s ease,
-    transform 0.6s ease;
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
