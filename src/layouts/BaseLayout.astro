@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import ScrollToTop from '../components/ScrollToTop.astro';
 import SkyBackground from '../components/SkyBackground.astro';
 
 interface Props {
@@ -36,7 +38,7 @@ const { title, description } = Astro.props;
     </script>
     <title>{title}</title>
   </head>
-  <body class="text-ink">
+  <body class="text-ink outline-none" tabindex="-1">
     <SkyBackground />
     <Navbar />
     <a
@@ -48,5 +50,7 @@ const { title, description } = Astro.props;
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    <Footer />
+    <ScrollToTop />
   </body>
 </html>

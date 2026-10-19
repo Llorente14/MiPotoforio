@@ -1,0 +1,29 @@
+<button
+  type="button"
+  id="scroll-to-top"
+  hidden
+  aria-label="Scroll to top"
+  class="fixed bottom-4 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-torii text-paper shadow-lg"
+>
+  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </svg>
+</button>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('#scroll-to-top')!;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function sync() {
+    button.hidden = window.scrollY <= window.innerHeight;
+  }
+
+  button.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: reduced.matches ? 'instant' : 'smooth' });
+    // Keyboard users continue from the top of the document, not from the now-offscreen button.
+    document.body.focus({ preventScroll: true });
+  });
+
+  window.addEventListener('scroll', sync, { passive: true });
+  sync();
+</script>
