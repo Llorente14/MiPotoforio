@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { title, summary, stack, repoUrl, liveUrl, cover, coverAlt, screenshots } = project.data;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={`${title} | Axel Chrisdy Sanjaya`} description={summary}>
+  <article class="mx-auto max-w-3xl px-4 pb-16 pt-20">
+    <a class="underline" href="/projects/">Back to projects</a>
+    <h1 class="mt-4 font-display text-3xl">{title}</h1>
+    <ul class="mt-3 flex flex-wrap gap-2 text-sm" aria-label="Tech stack">
+      {stack.map((s) => <li class="rounded-full bg-torii/15 px-2 py-0.5">{s}</li>)}
+    </ul>
+    <img src={cover} alt={coverAlt} width="1200" height="630" class="mt-6 w-full rounded-lg" />
+    <div class="mt-6 space-y-4"><Content /></div>
+    {
+      screenshots.length > 0 && (
+        <div class="mt-8 grid gap-4">
+          {screenshots.map((shot) => <img src={shot.src} alt={shot.alt} loading="lazy" class="w-full rounded-lg" />)}
+        </div>
+      )
+    }
+    <p class="mt-8 flex flex-wrap gap-4">
+      <a class="underline" href={repoUrl}>GitHub repository</a>
+      {liveUrl && <a class="underline" href={liveUrl}>Live site</a>}
+    </p>
+  </article>
+</BaseLayout>

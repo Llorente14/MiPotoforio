@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => a.data.featuredOrder - b.data.featuredOrder,
+);
+---
+
+<BaseLayout title="Projects | Axel Chrisdy Sanjaya" description="All projects by Axel Chrisdy Sanjaya.">
+  <div class="mx-auto max-w-5xl px-4 pb-16 pt-20">
+    <a class="underline" href="/">Back to home</a>
+    <h1 class="mt-4 font-display text-3xl">Projects</h1>
+    <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </ul>
+  </div>
+</BaseLayout>

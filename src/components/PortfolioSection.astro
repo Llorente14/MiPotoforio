@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import ProjectCard from './ProjectCard.astro';
+
+const featured = (await getCollection('projects'))
+  .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
+  .slice(0, 3);
+---
+
+<section id="portfolio" aria-labelledby="portfolio-heading" class="mx-auto max-w-5xl px-4 py-16">
+  <h2 id="portfolio-heading" class="font-display text-3xl">Portfolio</h2>
+  <ul class="mt-6 grid gap-6 md:grid-cols-3">
+    {featured.map((project) => <ProjectCard project={project} />)}
+  </ul>
+  <p class="mt-6"><a class="underline" href="/projects/">View all projects</a></p>
+</section>
