@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { getDeviceCapability } from '../lib/device-capability';
 import type { ModelId } from './ModelScene';
 
@@ -45,13 +45,23 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
   // Bumping the key remounts the scene; only real context losses count toward giving up.
   const [sceneKey, setSceneKey] = useState(0);
   const [losses, setLosses] = useState(0);
-  const remount = () => setSceneKey((n) => n + 1);
+  // The still stays on screen until the scene has drawn its model: fetching three.js, the GLB and the Draco
+  // decode take a second or two, and a bare transparent canvas in that gap reads as the model vanishing.
+  const [ready, setReady] = useState(false);
+  const onReady = useCallback(() => setReady(true), []);
+  const remount = () => {
+    setReady(false);
+    setSceneKey((n) => n + 1);
+  };
   const onContextLost = () => {
     setLosses((n) => n + 1);
     remount();
   };
   // The GPU may still be busy when a fresh context is asked for: wait a moment before the next try.
-  const onSceneError = () => window.setTimeout(onContextLost, 1000);
+  const onSceneError = () => {
+    setReady(false);
+    window.setTimeout(onContextLost, 1000);
+  };
 
   useEffect(() => setMode(getDeviceCapability()), []);
 
@@ -65,10 +75,11 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
     return () => window.removeEventListener('pageshow', onShow);
   }, []);
 
-  const still = (
+  const still = (decorative: boolean) => (
     <img
       src={`/renders/${id}.webp`}
-      alt={alt}
+      alt={decorative ? '' : alt}
+      aria-hidden={decorative || undefined}
       width={1000}
       height={1250}
       loading={priority ? 'eager' : 'lazy'}
@@ -78,7 +89,8 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
         const img = e.currentTarget;
         if (!img.src.endsWith('/renders/placeholder.svg')) img.src = '/renders/placeholder.svg';
       }}
-      className="size-full object-contain"
+      className="absolute inset-0 size-full object-contain transition-opacity duration-500"
+      style={{ opacity: decorative && ready ? 0 : 1 }}
     />
   );
 
@@ -90,14 +102,17 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
     >
       {mode.allow3d && losses <= MAX_LOSSES ? (
         <div role="img" aria-label={alt} className="absolute inset-0">
-          <SceneBoundary key={sceneKey} fallback={still} onError={onSceneError}>
-            <Suspense fallback={still}>
-              <ModelScene id={id} reducedMotion={mode.reducedMotion} onContextLost={onContextLost} />
-            </Suspense>
-          </SceneBoundary>
+          {still(true)}
+          <div className="absolute inset-0 transition-opacity duration-500" style={{ opacity: ready ? 1 : 0 }}>
+            <SceneBoundary key={sceneKey} fallback={null} onError={onSceneError}>
+              <Suspense fallback={null}>
+                <ModelScene id={id} reducedMotion={mode.reducedMotion} onContextLost={onContextLost} onReady={onReady} />
+              </Suspense>
+            </SceneBoundary>
+          </div>
         </div>
       ) : (
-        still
+        still(false)
       )}
     </div>
   );

@@ -69,13 +69,19 @@ function toonify(root: Object3D) {
   }
 }
 
-function Model({ id }: { id: ModelId }) {
+function Model({ id, onReady }: { id: ModelId; onReady?: () => void }) {
   const { scene } = useGLTF(`/models/${id}.glb`);
   const model = useMemo(() => {
     const clone = scene.clone(true);
     toonify(clone);
     return clone;
   }, [scene]);
+
+  // Mounted means the GLB is loaded; two frames later it has been drawn, so the slot can swap out the still.
+  useEffect(() => {
+    let raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => onReady?.())));
+    return () => cancelAnimationFrame(raf);
+  }, [onReady]);
 
   // Kaito: the card leaves his fingers as the Card Transition starts; the page card takes over from there.
   useFrame(() => {
@@ -172,9 +178,12 @@ export default function ModelScene({
   id,
   reducedMotion,
   onContextLost,
+  onReady,
 }: {
   id: ModelId;
   reducedMotion: boolean;
+  // The model has been drawn for the first time.
+  onReady?: () => void;
   // The GPU dropped this canvas (tab frozen, back/forward cache, driver reset): the slot remounts the scene.
   onContextLost?: () => void;
 }) {
@@ -216,7 +225,7 @@ export default function ModelScene({
         <Bounds fit clip margin={f.margin} maxDuration={reducedMotion ? 0 : 0.6}>
           <Lean reducedMotion={reducedMotion} amount={f.sway} swing={f.swing}>
             <MissingModelBoundary>
-              <Model id={id} />
+              <Model id={id} onReady={onReady} />
             </MissingModelBoundary>
           </Lean>
         </Bounds>

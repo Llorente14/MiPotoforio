@@ -80,6 +80,16 @@ test('a scene whose context never comes back still leaves the model visible', as
     el.dataset.lost = '';
     (el.getContext('webgl2') ?? el.getContext('webgl'))!.getExtension('WEBGL_lose_context')!.loseContext();
   });
-  // Either a fresh scene or the still render takes the old canvas's place.
-  await expect(slot.locator('canvas:not([data-lost]), img')).toHaveCount(1, { timeout: 15_000 });
+  // Either a fresh scene or the still render (shown again) takes the old canvas's place.
+  await expect
+    .poll(
+      () =>
+        slot.evaluate((el) => {
+          const fresh = el.querySelector('canvas:not([data-lost])');
+          const still = el.querySelector('img');
+          return fresh !== null || (still !== null && getComputedStyle(still).opacity === '1');
+        }),
+      { timeout: 15_000 },
+    )
+    .toBe(true);
 });
