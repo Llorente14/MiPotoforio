@@ -21,7 +21,7 @@ The landing page tells its story as the sky turns from night to day. Kaito Kid t
 <p align="center">
   <img src=".github/readme/mobile.webp" width="260" alt="Hero on a phone, showing the still render of Kaito Kid instead of a 3D scene" />
   &nbsp;&nbsp;
-  <img src=".github/readme/mobile-project.webp" width="260" alt="Wanderwhale project page on a phone with its swipeable gallery" />
+  <img src=".github/readme/mobile-project.webp" width="260" alt="AlterEgo Esport project page on a phone with its swipeable gallery" />
 </p>
 
 ## Features
