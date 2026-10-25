@@ -39,3 +39,8 @@ test('robots.txt allows crawling and links the sitemap; the share image and site
     expect(xml).toContain(`https://mipotoforio.vercel.app${path}`);
   }
 });
+
+test('first paint waits on no stylesheet request', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('head link[rel="stylesheet"]')).toHaveCount(0);
+});

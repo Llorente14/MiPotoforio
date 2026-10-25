@@ -12,6 +12,9 @@ export default defineConfig({
   site: 'https://mipotoforio.vercel.app',
   integrations: [react(), mdx(), sitemap()],
 
+  // The whole stylesheet is ~9 KiB gzipped: inline it so first paint waits on no CSS request.
+  build: { inlineStylesheets: 'always' },
+
   vite: {
     plugins: [tailwindcss()]
   }
