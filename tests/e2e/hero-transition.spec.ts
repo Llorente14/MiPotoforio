@@ -62,6 +62,9 @@ test('mobile: Hero uses a still Kaito, no 3D canvas or card, the sky crossfade r
   const hero = page.locator('#hero');
   await expect(hero.getByText('UNTAR · Jakarta')).toBeVisible();
   await expect(hero.getByText(/106°47/)).toBeHidden();
+  // The campus line sits under the social icons.
+  const icons = (await hero.getByRole('list', { name: 'Find Axel online' }).boundingBox())!;
+  expect((await hero.getByText('UNTAR · Jakarta').boundingBox())!.y).toBeGreaterThanOrEqual(icons.y + icons.height);
   const vh = page.viewportSize()!.height;
   await page.evaluate((y) => window.scrollTo(0, y), vh * 0.6);
   const skyOpacity = () => page.locator('[data-hero-sky]').evaluate((el) => Number(getComputedStyle(el).opacity));

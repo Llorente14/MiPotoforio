@@ -43,7 +43,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
         <span class="block">{last}</span>
       </h1>
       <p class="hero__tagline mt-[2.5svh] max-w-[30ch]">{tagline}</p>
-      <div class="mt-[3svh] flex flex-wrap items-center gap-x-8 gap-y-4">
+      <div class="mt-[3svh] flex flex-col items-start gap-y-4 md:flex-row md:flex-wrap md:items-center md:gap-x-8">
         <ul class="flex gap-2" aria-label="Find Axel online">
           <li><a class="hero__icon" href={socials.github} aria-label="Axel on GitHub"><SocialIcon name="github" class="size-[1.15rem]" /></a></li>
           <li><a class="hero__icon" href={socials.linkedin} aria-label="Axel on LinkedIn"><SocialIcon name="linkedin" class="size-[1.15rem]" /></a></li>
