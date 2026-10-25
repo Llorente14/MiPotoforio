@@ -93,10 +93,15 @@ html {
   color: var(--color-paper);
 }
 
-/* Square scrollbars for the page and every inner scroller: ink thumb on a paper track, ruled edge. */
+/* Square scrollbars for the page and every inner scroller: a faint ink thumb on a transparent track. */
+:root {
+  --scrollbar-thumb: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-ink) var(--color-paper);
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 @supports selector(::-webkit-scrollbar) {
@@ -108,29 +113,29 @@ html {
   ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
-    background: var(--color-paper);
+    background: transparent;
     border-radius: 0;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--color-paper);
-    border-left: 1px solid var(--color-rule);
+    background: transparent;
     border-radius: 0;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-ink);
-    border: 3px solid var(--color-paper);
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
+    border: 3px solid transparent;
     border-radius: 0;
   }
 
   ::-webkit-scrollbar-thumb:hover,
   ::-webkit-scrollbar-thumb:active {
-    background: var(--color-torii);
+    background: var(--scrollbar-thumb-hover);
   }
 
   ::-webkit-scrollbar-corner {
-    background: var(--color-paper);
+    background: transparent;
   }
 }
 
