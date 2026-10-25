@@ -10,9 +10,9 @@ test('landing portfolio shows exactly 3 projects in featured order', async ({ pa
   await expect(page.getByRole('link', { name: 'View all projects' })).toHaveAttribute('href', '/projects/');
 });
 
-test('list page shows all 4 projects and opens a detail page', async ({ page }) => {
+test('list page shows all 5 projects and opens a detail page', async ({ page }) => {
   await page.goto('/projects/');
-  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(4);
+  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(5);
   await page.getByRole('link', { name: /Wanderwhale/ }).click();
   await expect(page).toHaveURL(/\/projects\/wanderwhale\/$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Wanderwhale' })).toBeVisible();
