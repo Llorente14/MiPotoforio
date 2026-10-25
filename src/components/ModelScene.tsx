@@ -168,7 +168,16 @@ const framing: Record<
   temple: { camera: [3.5, 2.2, 5.5], fov: 34, margin: 1.12, sway: 0.35, ground: true },
 };
 
-export default function ModelScene({ id, reducedMotion }: { id: ModelId; reducedMotion: boolean }) {
+export default function ModelScene({
+  id,
+  reducedMotion,
+  onContextLost,
+}: {
+  id: ModelId;
+  reducedMotion: boolean;
+  // The GPU dropped this canvas (tab frozen, back/forward cache, driver reset): the slot remounts the scene.
+  onContextLost?: () => void;
+}) {
   const f = framing[id];
   return (
     <Canvas
@@ -178,6 +187,27 @@ export default function ModelScene({ id, reducedMotion }: { id: ModelId; reduced
       gl={{ alpha: true, antialias: true }}
       // Wheel and touch scrolling must always reach the page.
       style={{ touchAction: 'pan-y' }}
+      onCreated={({ gl }) => {
+        const canvas = gl.domElement;
+        canvas.addEventListener(
+          'webglcontextlost',
+          (e) => {
+            // preventDefault asks the browser to restore the context. A new one cannot be made while the GPU
+            // is still dropping this one, so remount once it is back, or after a grace period if it never is.
+            e.preventDefault();
+            const fallback = window.setTimeout(() => onContextLost?.(), 2000);
+            canvas.addEventListener(
+              'webglcontextrestored',
+              () => {
+                window.clearTimeout(fallback);
+                onContextLost?.();
+              },
+              { once: true },
+            );
+          },
+          { once: true },
+        );
+      }}
     >
       <ambientLight intensity={0.75 * (f.light ?? 1)} />
       <directionalLight position={[-3, 5, 4]} intensity={1.6 * (f.light ?? 1)} />

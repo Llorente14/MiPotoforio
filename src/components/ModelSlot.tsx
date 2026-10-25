@@ -1,9 +1,31 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { getDeviceCapability } from '../lib/device-capability';
 import type { ModelId } from './ModelScene';
 
 // three.js is only downloaded when 3D is allowed.
 const ModelScene = lazy(() => import('./ModelScene'));
+
+// A lost WebGL context leaves a blank canvas that a demand-rendered scene never repaints, so the slot
+// remounts the scene with a fresh context. After this many losses it settles on the still.
+const MAX_LOSSES = 3;
+
+// A scene that throws (no usable WebGL context yet, for one) shows the still instead of taking the slot
+// down, and reports it so the slot can try again.
+class SceneBoundary extends Component<
+  { fallback: ReactNode; onError: () => void; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    this.props.onError();
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 interface Props {
   id: ModelId;
@@ -20,7 +42,28 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
     reducedMotion: false,
   });
 
+  // Bumping the key remounts the scene; only real context losses count toward giving up.
+  const [sceneKey, setSceneKey] = useState(0);
+  const [losses, setLosses] = useState(0);
+  const remount = () => setSceneKey((n) => n + 1);
+  const onContextLost = () => {
+    setLosses((n) => n + 1);
+    remount();
+  };
+  // The GPU may still be busy when a fresh context is asked for: wait a moment before the next try.
+  const onSceneError = () => window.setTimeout(onContextLost, 1000);
+
   useEffect(() => setMode(getDeviceCapability()), []);
+
+  // Coming back through the back/forward cache: the page is restored as it was, but its GPU contexts
+  // may not have survived. Start the scene over.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (e.persisted) remount();
+    };
+    window.addEventListener('pageshow', onShow);
+    return () => window.removeEventListener('pageshow', onShow);
+  }, []);
 
   const still = (
     <img
@@ -45,11 +88,13 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
       className="relative flex w-full items-center justify-center"
       style={{ aspectRatio: aspect }}
     >
-      {mode.allow3d ? (
+      {mode.allow3d && losses <= MAX_LOSSES ? (
         <div role="img" aria-label={alt} className="absolute inset-0">
-          <Suspense fallback={still}>
-            <ModelScene id={id} reducedMotion={mode.reducedMotion} />
-          </Suspense>
+          <SceneBoundary key={sceneKey} fallback={still} onError={onSceneError}>
+            <Suspense fallback={still}>
+              <ModelScene id={id} reducedMotion={mode.reducedMotion} onContextLost={onContextLost} />
+            </Suspense>
+          </SceneBoundary>
         </div>
       ) : (
         still
