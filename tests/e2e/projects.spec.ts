@@ -102,12 +102,15 @@ test('Dapute shows its I/O Fest highlight and the video folder link', async ({ p
   );
 });
 
-test('a video without a YouTube id shows a coming-soon card', async ({ page }) => {
+test('a YouTube video loads only after the visitor presses play', async ({ page }) => {
+  // Keep the test offline: thumbnails and the player are never fetched for real.
+  await page.route(/(ytimg|youtube(-nocookie)?)\.com/, (route) => route.abort());
   await page.goto('/projects/alterego-esport/');
   const media = page.getByRole('region', { name: 'Videos & links' });
-  await expect(media.getByText('Video coming soon')).toBeVisible();
   await expect(media.getByText('Site walkthrough demo')).toBeVisible();
   await expect(page.locator('iframe')).toHaveCount(0);
+  await media.getByRole('button', { name: 'Play video: Site walkthrough demo' }).click();
+  await expect(page.locator('iframe[title="Site walkthrough demo"]')).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/QRR-XEONwk0/);
 });
 
 test('projects without videos or links have no media section', async ({ page }) => {
