@@ -67,9 +67,5 @@ const ogImage = new URL(image, Astro.site);
     </main>
     <Footer />
     <ScrollToTop />
-      <script>
-      // Decorative Japanese text only: fetch its font CSS once the page is interactive.
-      window.addEventListener('load', () => void import('../styles/jp-font.css'));
-    </script>
   </body>
 </html>

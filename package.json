@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/jp-font.mjs && astro build",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
