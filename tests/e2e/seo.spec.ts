@@ -40,6 +40,17 @@ test('robots.txt allows crawling and links the sitemap; the share image and site
   }
 });
 
+test('site icons and the web manifest resolve', async ({ page, request }) => {
+  await page.goto('/');
+  const hrefs = await page
+    .locator('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="manifest"]')
+    .evaluateAll((links) => links.map((l) => l.getAttribute('href')));
+  expect(hrefs).toEqual(expect.arrayContaining(['/favicon.ico', '/apple-touch-icon.png', '/site.webmanifest']));
+  for (const href of hrefs) expect((await request.get(href!)).status()).toBe(200);
+  const manifest = await (await request.get('/site.webmanifest')).json();
+  for (const icon of manifest.icons) expect((await request.get(icon.src)).status()).toBe(200);
+});
+
 test('first paint waits on no stylesheet request', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('head link[rel="stylesheet"]')).toHaveCount(0);

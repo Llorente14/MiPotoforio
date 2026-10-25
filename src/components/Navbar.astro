@@ -120,6 +120,7 @@ const year = new Date().getFullYear();
   function sync() {
     const current = document.documentElement.dataset.sky;
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skyOption === current)));
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', current === 'night' ? '#121a2e' : '#ece4d0');
   }
 
   buttons.forEach((b) =>

@@ -1,0 +1,14 @@
+{
+  "name": "Axel Chrisdy Sanjaya",
+  "short_name": "Axel C.S.",
+  "description": "Portfolio of Axel Chrisdy Sanjaya, Informatics Engineering student at Universitas Tarumanagara.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#ece4d0",
+  "theme_color": "#ece4d0",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
