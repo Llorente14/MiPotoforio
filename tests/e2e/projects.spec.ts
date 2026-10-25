@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const order = ['Dapute', 'AlterEgo Esport', 'LnFTI'];
+const order = ['Dapute', 'AlterEgo Esport', 'Darshanease'];
 
 test('landing portfolio shows exactly 3 projects in featured order', async ({ page }) => {
   await page.goto('/');
