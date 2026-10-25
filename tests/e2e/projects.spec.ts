@@ -26,12 +26,11 @@ test('list page shows all 5 projects and opens a detail page', async ({ page }) 
 });
 
 test('project images have alt text', async ({ page }) => {
-  for (const url of ['/', '/projects/', '/projects/dapute/']) {
+  for (const url of ['/', '/projects/', '/projects/dapute/', '/projects/wanderwhale/']) {
     await page.goto(url);
-    const imgs = page.locator('main img:not([aria-hidden="true"])');
-    const n = await imgs.count();
-    for (let i = 0; i < n; i++) {
-      await expect(imgs.nth(i)).toHaveAttribute('alt', /\S/);
-    }
+    // Read every alt in one pass: islands may swap images while the page settles.
+    const alts = await page.locator('main img:not([aria-hidden="true"])').evaluateAll((els) => els.map((el) => el.getAttribute('alt') ?? ''));
+    expect(alts.length).toBeGreaterThan(0);
+    for (const alt of alts) expect(alt).toMatch(/\S/);
   }
 });
