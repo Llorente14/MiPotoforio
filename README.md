@@ -4,12 +4,32 @@ Personal portfolio of **Axel Chrisdy Sanjaya**, Informatics Engineering student 
 
 The landing page tells its story as the sky turns from night to day. Kaito Kid throws a card in the Hero, and the card opens into the rest of the page. Below that are cel-shaded 3D scenes, drifting sakura petals, curated projects and certificates, and a live GitHub contribution heatmap.
 
+**Live site:** [mipotoforio.vercel.app](https://mipotoforio.vercel.app)
+
+## Preview
+
+![Hero: Kaito Kid holding his calling card in front of a striped moon, next to the name Axel Chrisdy Sanjaya](.github/readme/hero.webp)
+
+| About | Portfolio |
+|---|---|
+| ![About section with profile details, semester and GPA cards beside the cel-shaded UNTAR Building 2](.github/readme/about.webp) | ![Portfolio section with three featured projects dealt as a fanned hand of playing cards](.github/readme/portfolio.webp) |
+| **Night sky** | **Project page** |
+| ![The same portfolio hand under the Night sky theme](.github/readme/portfolio-night.webp) | ![Dapute project page with its stack and an auto-advancing screenshot gallery](.github/readme/project.webp) |
+| **Command palette** | **GitHub Activity** |
+| ![Command palette searching for "mongo" and listing matching certificates](.github/readme/search.webp) | ![GitHub contribution heatmap with the yearly total](.github/readme/github.webp) |
+
+<p align="center">
+  <img src=".github/readme/mobile.webp" width="260" alt="Hero on a phone, showing the still render of Kaito Kid instead of a 3D scene" />
+  &nbsp;&nbsp;
+  <img src=".github/readme/mobile-project.webp" width="260" alt="Wanderwhale project page on a phone with its swipeable gallery" />
+</p>
+
 ## Features
 
 - **Hero with Card Transition.** A scroll-driven animation in which Kaito Kid throws a card that fills the screen and opens into the About section.
 - **Sky Theme.** Light and Night skies, switchable from the navbar and remembered between visits.
 - **Cel-shaded 3D scenes** with ink outlines for UNTAR Building 2, a Kiyomizu-dera style pagoda and Kaito Kid; the fun fact runs a looping Akai Shuichi clip cut to the striped-sun disc.
-- **Projects and Certificates**, each with a landing preview, a full list page and a detail page, plus a CV download.
+- **Projects and Certificates**, each with a landing preview and a full list page, plus a CV download. Project pages have an auto-advancing screenshot gallery and a videos & links section.
 - **GitHub Activity.** A contribution heatmap fetched at build time and refreshed daily.
 - **Command palette** opened with <kbd>Ctrl</kbd>+<kbd>K</kbd> / <kbd>⌘</kbd>+<kbd>K</kbd>, for fuzzy search across sections, projects, certificates and links.
 - **Device-aware.** Phones and tablets never start WebGL and get still renders instead. `prefers-reduced-motion` is respected throughout.
@@ -50,6 +70,7 @@ pnpm dev                           # http://localhost:4321
 ## Project structure
 
 ```
+.github/readme/     Screenshots used in this README
 blender/            Blender scripts that generate every 3D model
   decals/           Vector face paintings projected onto the models
   textures/         Card face images for the 3D calling card
@@ -57,6 +78,7 @@ scripts/            Asset helpers (texture rasteriser for the painted faces)
 public/
   models/           Draco-compressed GLB models
   renders/          Transparent still renders (phones / no WebGL)
+  projects/         Project screenshots (WebP), one folder per project
 src/
   assets/card/      Vector playing card (front and back), the source of every card image
   pages/            Routes
