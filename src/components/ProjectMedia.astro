@@ -1,0 +1,132 @@
+---
+// "Videos & links" block on a project page. YouTube loads lite: only the thumbnail until the visitor
+// presses play, then the privacy-enhanced iframe replaces it.
+interface Props {
+  title: string;
+  videos: { title: string; youtubeId?: string }[];
+  links: { label: string; url: string; note?: string }[];
+}
+
+const { title, videos, links } = Astro.props;
+---
+
+{
+  (videos.length > 0 || links.length > 0) && (
+    <section aria-labelledby="media-heading" class="mt-16">
+      <h2 id="media-heading" class="display text-[clamp(1.9rem,3vw,2.6rem)]">
+        Videos &amp; links
+      </h2>
+      {videos.length > 0 && (
+        <ul class="mt-6 grid gap-6" aria-label={`${title} videos`}>
+          {videos.map((v) => (
+            <li>
+              {v.youtubeId ? (
+                <div class="media-video">
+                  <button type="button" class="media-video__play" aria-label={`Play video: ${v.title}`} data-youtube={v.youtubeId} data-title={v.title}>
+                    <img src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`} alt="" loading="lazy" decoding="async" />
+                    <span class="media-video__icon" aria-hidden="true">
+                      ▶
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div class="media-video media-video--soon">
+                  <span class="label opacity-75">Video coming soon</span>
+                </div>
+              )}
+              <p class="label mt-3">{v.title}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      {links.length > 0 && (
+        <ul class="mt-6 border-t border-rule" aria-label={`${title} links`}>
+          {links.map((l) => (
+            <li class="border-b border-rule">
+              <a class="media-link" href={l.url} target="_blank" rel="noopener">
+                <span>
+                  <span class="block text-lg">{l.label}</span>
+                  {l.note && <span class="label mt-1 block opacity-70">{l.note}</span>}
+                </span>
+                <span aria-hidden="true" class="label">
+                  ↗
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+<style>
+  .media-video {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 2px solid var(--color-ink);
+    background: #17140f;
+  }
+  .media-video--soon {
+    display: grid;
+    place-items: center;
+    color: #ece4d0;
+    background: repeating-linear-gradient(135deg, #17140f 0 14px, #211d16 14px 28px);
+  }
+  .media-video__play,
+  .media-video :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .media-video__play img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+  }
+  .media-video__play:hover img {
+    opacity: 1;
+  }
+  .media-video__icon {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 4rem;
+    translate: -50% -50%;
+    border-radius: 999px;
+    background: var(--color-torii);
+    color: #ece4d0;
+    font-size: 1.3rem;
+  }
+  .media-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    transition: color 0.2s ease;
+  }
+  .media-link:hover {
+    color: var(--color-torii);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-youtube]').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = `https://www.youtube-nocookie.com/embed/${btn.dataset.youtube}?autoplay=1&rel=0`;
+      frame.title = btn.dataset.title ?? 'YouTube video';
+      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allowFullscreen = true;
+      btn.replaceWith(frame);
+      frame.focus();
+    }),
+  );
+</script>

@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectGallery from '../../components/ProjectGallery.astro';
+import ProjectMedia from '../../components/ProjectMedia.astro';
 
 export async function getStaticPaths() {
   const projects = (await getCollection('projects')).sort((a, b) => a.data.featuredOrder - b.data.featuredOrder);
@@ -9,7 +10,7 @@ export async function getStaticPaths() {
 }
 
 const { project, index } = Astro.props;
-const { title, summary, stack, repoUrl, liveUrl, cover, coverAlt, screenshots, date } = project.data;
+const { title, summary, stack, repoUrl, liveUrl, cover, coverAlt, screenshots, highlight, videos, links, date } = project.data;
 const { Content } = await render(project);
 const rank = String(index + 1).padStart(2, '0');
 const shots = screenshots.length > 0 ? screenshots : [{ src: cover, alt: coverAlt }];
@@ -26,6 +27,7 @@ const shots = screenshots.length > 0 ? screenshots : [{ src: cover, alt: coverAl
         </p>
         <h1 class="display project-title mt-4">{title}</h1>
         <p class="mt-6 max-w-md font-jp text-lg">{summary}</p>
+        {highlight && <p class="highlight mt-6">{highlight}</p>}
         <dl class="mt-10 border-t border-rule">
           <div class="flex items-baseline gap-6 border-b border-rule py-3">
             <dt class="label w-20 shrink-0 opacity-75">Stack</dt>
@@ -46,6 +48,7 @@ const shots = screenshots.length > 0 ? screenshots : [{ src: cover, alt: coverAl
       </div>
       <div class="min-w-0 lg:col-span-5 lg:col-start-1 lg:row-start-2">
         <div class="prose-print space-y-4 text-lg"><Content /></div>
+        <ProjectMedia title={title} videos={videos} links={links} />
       </div>
     </div>
   </article>
@@ -55,5 +58,13 @@ const shots = screenshots.length > 0 ? screenshots : [{ src: cover, alt: coverAl
   .project-title {
     font-size: clamp(2.75rem, 5vw, 5.5rem);
     overflow-wrap: anywhere;
+  }
+  /* Stamp-style callout: a torii rule on the left, like a seal pressed beside the summary. */
+  .highlight {
+    max-width: 28rem;
+    padding: 0.7rem 1rem;
+    border-left: 3px solid var(--color-torii);
+    background: color-mix(in srgb, var(--color-torii) 10%, transparent);
+    line-height: 1.6;
   }
 </style>

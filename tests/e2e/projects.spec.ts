@@ -91,3 +91,26 @@ test('project title never overlaps the gallery', async ({ page }, info) => {
     }
   }
 });
+
+test('Dapute shows its I/O Fest highlight and the video folder link', async ({ page }) => {
+  await page.goto('/projects/dapute/');
+  await expect(page.getByText(/Demoed live at I\/O Fest UNTAR 2026/)).toBeVisible();
+  const media = page.getByRole('region', { name: 'Videos & links' });
+  await expect(media.getByRole('link', { name: /Documentation, app and demo videos/ })).toHaveAttribute(
+    'href',
+    'https://drive.google.com/drive/folders/1mOuv46wUWMqGUvJysRoRUmVmKijs8DZ9?usp=sharing',
+  );
+});
+
+test('a video without a YouTube id shows a coming-soon card', async ({ page }) => {
+  await page.goto('/projects/alterego-esport/');
+  const media = page.getByRole('region', { name: 'Videos & links' });
+  await expect(media.getByText('Video coming soon')).toBeVisible();
+  await expect(media.getByText('Site walkthrough demo')).toBeVisible();
+  await expect(page.locator('iframe')).toHaveCount(0);
+});
+
+test('projects without videos or links have no media section', async ({ page }) => {
+  await page.goto('/projects/wanderwhale/');
+  await expect(page.getByRole('heading', { name: 'Videos & links' })).toHaveCount(0);
+});
