@@ -47,3 +47,13 @@ test('fun fact section shows the Conan fact, the episode from profile content an
   await expect(video).toHaveAttribute('loop', '');
   expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(true);
 });
+
+test('mobile: 待って sits above the Akai clip, not over it', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile');
+  await page.goto('/');
+  const section = page.locator('#conan');
+  await section.scrollIntoViewIfNeeded();
+  const wait = (await section.getByText('待って').boundingBox())!;
+  const video = (await section.locator('video[data-conan-video]').boundingBox())!;
+  expect(wait.y + wait.height).toBeLessThanOrEqual(video.y);
+});
