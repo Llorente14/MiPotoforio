@@ -82,3 +82,25 @@ test('reduced motion: no pinning and About is reachable by normal scroll', async
   await page.evaluate(() => document.querySelector('#about')!.scrollIntoView());
   await expect(page.getByRole('heading', { name: 'About me' })).toBeInViewport();
 });
+
+const barAlpha = (page: import('@playwright/test').Page) =>
+  page.locator('[data-navbar]').evaluate((el) => {
+    const m = getComputedStyle(el).backgroundColor.match(/[\d.]+/g)!.map(Number);
+    return m.length > 3 ? m[3] : m.some((v) => v > 0) ? 1 : 0;
+  });
+
+test('mobile: the navbar gets a backing once the Hero scrolls under it', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile');
+  await page.goto('/');
+  expect(await barAlpha(page)).toBe(0);
+  await page.evaluate((y) => window.scrollTo(0, y), page.viewportSize()!.height * 0.35);
+  await expect.poll(() => barAlpha(page)).toBeGreaterThan(0.5);
+});
+
+test('desktop: the navbar stays clear while the Hero is pinned', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop');
+  await page.goto('/');
+  await page.evaluate((y) => window.scrollTo(0, y), page.viewportSize()!.height * 0.3);
+  await page.waitForTimeout(400);
+  expect(await barAlpha(page)).toBe(0);
+});

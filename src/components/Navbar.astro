@@ -137,7 +137,9 @@ const year = new Date().getFullYear();
   );
   sync();
 
-  // While the Night Hero is under the bar, the bar wears Night too; past it, a washi backing keeps text legible.
+  // While the Night Hero is under the bar, the bar wears Night too. Once scrolled it gets a backing (night
+  // over the Hero, washi past it) so the wordmark never runs into the page, except while the desktop Hero
+  // is pinned and the card animation plays under a clear bar.
   const bar = document.querySelector<HTMLElement>('[data-navbar]');
   const hero = document.querySelector('#hero');
   function onScroll() {
@@ -145,7 +147,8 @@ const year = new Date().getFullYear();
     const overHero = hero ? hero.getBoundingClientRect().bottom > bar.offsetHeight : false;
     if (overHero) bar.dataset.sky = 'night';
     else delete bar.dataset.sky;
-    bar.toggleAttribute('data-solid', !overHero && window.scrollY > 8);
+    const pinned = hero?.parentElement?.classList.contains('pin-spacer') ?? false;
+    bar.toggleAttribute('data-solid', window.scrollY > 8 && !(overHero && pinned));
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
