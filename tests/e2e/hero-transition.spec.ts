@@ -53,15 +53,20 @@ test('desktop: after the transition the sky matches the chosen theme, the Hero s
   expect(await page.locator('[data-hero-sky]').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(heroNight);
 });
 
-test('mobile: Hero uses a still Kaito, no 3D canvas, crossfade runs and About is reachable', async ({ page }, info) => {
+test('mobile: Hero uses a still Kaito, no 3D canvas or card, the sky crossfade runs and About is reachable', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile');
   await page.goto('/');
   await expect(page.getByRole('img', { name: /Kaito Kid/ })).toBeVisible();
   await expect(page.locator('canvas:not([data-sakura])')).toHaveCount(0);
   await expect(page.locator('#hero')).toHaveCSS('position', 'relative'); // not pinned
+  const hero = page.locator('#hero');
+  await expect(hero.getByText('UNTAR · Jakarta')).toBeVisible();
+  await expect(hero.getByText(/106°47/)).toBeHidden();
   const vh = page.viewportSize()!.height;
-  await page.evaluate((y) => window.scrollTo(0, y), vh * 0.5);
-  await expect.poll(() => cardOpacity(page)).toBeGreaterThan(0.3);
+  await page.evaluate((y) => window.scrollTo(0, y), vh * 0.6);
+  const skyOpacity = () => page.locator('[data-hero-sky]').evaluate((el) => Number(getComputedStyle(el).opacity));
+  await expect.poll(skyOpacity).toBeLessThan(0.9);
+  expect(await cardOpacity(page)).toBe(0);
   await page.evaluate(() => document.querySelector('#about')!.scrollIntoView());
   await expect(page.getByRole('heading', { name: 'About me' })).toBeInViewport();
 });

@@ -29,7 +29,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     <p class="tategaki hero__epithet">月下の奇術師</p>
   </div>
 
-  <div class="relative mx-auto grid h-full max-w-[90rem] grid-cols-12 items-start gap-x-6 px-4 pt-24 pb-[14svh] md:items-center md:px-8 md:pt-[11svh] md:pb-[12svh]">
+  <div class="relative mx-auto grid h-full max-w-[90rem] grid-cols-12 items-start gap-x-6 px-4 pt-[4.5rem] pb-[14svh] md:items-center md:px-8 md:pt-[11svh] md:pb-[12svh]">
     <div data-hero-content class="relative z-10 col-span-12 md:col-span-7 lg:col-span-6">
       <p class="label flex items-center gap-3 opacity-80">
         <span>File 01</span><span aria-hidden="true" class="h-px w-10 bg-current opacity-50"></span><span>Calling card</span>
@@ -51,7 +51,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
         </ul>
         <dl class="label flex flex-wrap gap-x-8 gap-y-2 opacity-80">
           <div><dt class="sr-only">Campus</dt><dd>UNTAR · Jakarta</dd></div>
-          <div><dt class="sr-only">Coordinates</dt><dd>{coordinates}</dd></div>
+          <div class="hidden md:block"><dt class="sr-only">Coordinates</dt><dd>{coordinates}</dd></div>
         </dl>
       </div>
       <p class="label hero__cue mt-[4svh] hidden md:flex items-center gap-3" aria-hidden="true">
@@ -68,7 +68,7 @@ const blades = Array.from({ length: 140 }, (_, i) => {
     <rect y="112" width="1200" height="8" />
   </svg>
 
-  <!-- The thrown card. Decorative; the transition script grows it from Kaito's hand into a page. -->
+  <!-- The thrown card (desktop only). Decorative; the transition script grows it from Kaito's hand into a page. -->
   <div data-hero-card aria-hidden="true" class="hero-card">
     <div class="hero-card__page"></div>
     <div data-hero-card-art class="hero-card__art" set:html={cardArt} />
@@ -269,17 +269,13 @@ const blades = Array.from({ length: 140 }, (_, i) => {
         .to(kaito, { opacity: 0, y: -60, duration: 0.14 }, 0.8)
         .to(card, { opacity: 0, duration: 0.08, ease: 'none' }, 0.92);
     } else {
-      // Phones and tablets: no pinning, no 3D; the card slips out and grows as the Hero scrolls away.
-      gsap
-        .timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
-        })
-        .set(card, { left: () => hand().left, top: () => hand().top, width: () => hand().width, height: () => hand().height, rotation: -14 }, 0)
-        .to(card, { opacity: 0.95, left: () => vw() * 0.08, top: () => vh() * 0.45, width: () => vw() * 0.84, height: () => vh() * 0.5, rotation: 0, duration: 0.5 }, 0)
-        .to(art, { opacity: 0, duration: 0.2 }, 0.3)
-        .to(sky, { opacity: 0, duration: 0.5 }, 0.3)
-        .to(card, { opacity: 0, duration: 0.3 }, 0.7);
+      // Phones and tablets: no pinning, no 3D and no card (it could never cover an unpinned screen).
+      // Only the night sky fades into the visitor's Sky Theme as the Hero scrolls away.
+      gsap.to(sky, {
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: { trigger: hero, start: '30% top', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
+      });
     }
   }
 </script>
