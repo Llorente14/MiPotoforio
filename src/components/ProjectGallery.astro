@@ -31,10 +31,10 @@ const dots = Math.min(shots.length, 5);
       shots.length > 1 && (
         <>
           <button type="button" class="gallery__nav gallery__nav--prev" aria-label="Previous screenshot" data-prev>
-            ←
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </button>
           <button type="button" class="gallery__nav gallery__nav--next" aria-label="Next screenshot" data-next>
-            →
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </button>
         </>
       )
@@ -63,7 +63,9 @@ const dots = Math.min(shots.length, 5);
   .gallery__frame {
     position: relative;
     aspect-ratio: 16 / 10;
-    overflow: hidden;
+    /* clip, not hidden: the blurred backdrop bleeds past the edges, and a hidden box can still be
+       scrolled sideways when a button inside it takes focus. */
+    overflow: clip;
     border: 2px solid var(--color-ink);
     background: var(--ink);
   }
@@ -95,13 +97,16 @@ const dots = Math.min(shots.length, 5);
     position: absolute;
     top: 50%;
     z-index: 1;
-    width: 2.75rem;
-    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
     translate: 0 -50%;
+    border: 1px solid rgb(236 228 208 / 0.35);
     border-radius: 999px;
-    background: rgb(236 228 208 / 0.92);
-    color: var(--ink);
-    font-size: 1.2rem;
+    background: rgb(23 20 15 / 0.6);
+    backdrop-filter: blur(6px);
+    color: #ece4d0;
     opacity: 0;
     transition:
       opacity 0.25s ease,
@@ -111,10 +116,10 @@ const dots = Math.min(shots.length, 5);
     transform: scale(1.08);
   }
   .gallery__nav--prev {
-    left: 0.9rem;
+    left: 1.25rem;
   }
   .gallery__nav--next {
-    right: 0.9rem;
+    right: 1.25rem;
   }
   .gallery:hover .gallery__nav,
   .gallery:focus-within .gallery__nav {
@@ -184,8 +189,13 @@ const dots = Math.min(shots.length, 5);
     let hovered = false;
     let inView = false;
 
-    // First slide in the dot window: keep the active dot centred until the window hits either end.
-    const windowStart = () => Math.min(Math.max(index - Math.floor(dots.length / 2), 0), n - dots.length);
+    // First slide in the dot window. The active dot walks across the strip, and stepping past an end
+    // turns a page of dots, so the indicator keeps moving instead of parking in the middle or at an edge.
+    let start = 0;
+    const turnPage = () => {
+      if (index >= start + dots.length) start = Math.min(index, n - dots.length);
+      else if (index < start) start = Math.max(index - dots.length + 1, 0);
+    };
 
     const render = () => {
       slides.forEach((s, i) => {
@@ -193,7 +203,7 @@ const dots = Math.min(shots.length, 5);
         if (i === index) s.removeAttribute('aria-hidden');
         else s.setAttribute('aria-hidden', 'true');
       });
-      const start = windowStart();
+      turnPage();
       dots.forEach((d, k) => {
         const slide = start + k;
         d.setAttribute('aria-current', String(slide === index));
@@ -223,7 +233,7 @@ const dots = Math.min(shots.length, 5);
 
     root.querySelector('[data-prev]')?.addEventListener('click', () => user(index - 1));
     root.querySelector('[data-next]')?.addEventListener('click', () => user(index + 1));
-    dots.forEach((d, k) => d.addEventListener('click', () => user(windowStart() + k)));
+    dots.forEach((d, k) => d.addEventListener('click', () => user(start + k)));
     root.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') user(index - 1);
       if (e.key === 'ArrowRight') user(index + 1);

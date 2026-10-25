@@ -117,3 +117,26 @@ test('projects without videos or links have no media section', async ({ page }) 
   await page.goto('/projects/wanderwhale/');
   await expect(page.getByRole('heading', { name: 'Videos & links' })).toHaveCount(0);
 });
+
+test('the active dot walks across the strip, then the dots turn a page', async ({ page }) => {
+  await page.goto('/projects/alterego-esport/');
+  const gallery = page.getByRole('region', { name: 'AlterEgo Esport screenshots' });
+  const dots = gallery.getByRole('group', { name: 'Choose screenshot' }).getByRole('button');
+  const next = gallery.getByRole('button', { name: 'Next screenshot' });
+  for (let i = 0; i < 3; i++) await next.click();
+  await expect(dots.nth(3)).toHaveAttribute('aria-current', 'true');
+  await next.click();
+  await expect(dots.nth(4)).toHaveAttribute('aria-current', 'true');
+  await next.click();
+  await expect(gallery.getByText('6 / 14')).toBeVisible();
+  await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true');
+  await expect(dots.nth(0)).toHaveAccessibleName('Show screenshot 6');
+
+  // Clicking must not shift the frame: both buttons stay fully inside the gallery.
+  const box = (await gallery.boundingBox())!;
+  for (const name of ['Previous screenshot', 'Next screenshot']) {
+    const b = (await gallery.getByRole('button', { name }).boundingBox())!;
+    expect(b.x).toBeGreaterThanOrEqual(box.x);
+    expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width);
+  }
+});
