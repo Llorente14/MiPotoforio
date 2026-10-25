@@ -93,6 +93,47 @@ html {
   color: var(--color-paper);
 }
 
+/* Square scrollbars for the page and every inner scroller: ink thumb on a paper track, ruled edge. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink) var(--color-paper);
+}
+
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+    background: var(--color-paper);
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-paper);
+    border-left: 1px solid var(--color-rule);
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+    border: 3px solid var(--color-paper);
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb:hover,
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--color-torii);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--color-paper);
+  }
+}
+
 /* Condensed display voice: headlines, wordmark, numerals. */
 .display {
   font-family: var(--font-display);
