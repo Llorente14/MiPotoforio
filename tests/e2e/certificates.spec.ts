@@ -48,3 +48,12 @@ test('enlarged view opens by keyboard and closes with the Close button', async (
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
 });
+
+test('an opened certificate fits the screen without scrolling under its frame', async ({ page }) => {
+  await page.setViewportSize({ width: 1128, height: 823 });
+  await page.goto('/certificates/');
+  await page.getByRole('button', { name: /DIGDAYA Essential Phase/ }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading', { name: 'DIGDAYA Essential Phase' })).toBeVisible();
+  await expect.poll(() => dialog.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(1);
+});

@@ -35,10 +35,11 @@ const fmt = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', time
 <dialog
   id="cert-dialog"
   aria-labelledby="cert-dialog-title"
-  class="cert-dialog m-auto max-h-[90vh] w-[min(92vw,52rem)] overflow-auto bg-paper p-5 text-ink backdrop:bg-[#0b0f1c]/80 md:p-8"
+  class="cert-dialog m-auto max-h-[90vh] w-[min(92vw,52rem)] overflow-auto bg-paper p-6 text-ink backdrop:bg-[#0b0f1c]/80 md:p-9"
 >
-  <img id="cert-dialog-image" src="" alt="" class="w-full border border-ink" />
-  <h2 id="cert-dialog-title" class="display mt-6 text-[2.5rem]"></h2>
+  <!-- Capped so the whole slip fits the viewport: a scrolling dialog slides content under its inset frame. -->
+  <img id="cert-dialog-image" src="" alt="" class="mx-auto block max-h-[calc(90vh-16rem)] w-auto max-w-full border border-ink object-contain" />
+  <h2 id="cert-dialog-title" class="display mt-6 text-[clamp(1.75rem,3.2vw,2.5rem)]"></h2>
   <p id="cert-dialog-meta" class="label mt-3 opacity-75"></p>
   <div class="mt-6 flex flex-wrap items-center gap-6">
     <a id="cert-dialog-verify" hidden class="label label-link" target="_blank" rel="noopener noreferrer">Verify</a>
