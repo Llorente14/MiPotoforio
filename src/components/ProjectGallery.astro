@@ -1,0 +1,251 @@
+---
+// Screenshot carousel for a project page: slides crossfade on their own, prev/next show on hover, and the
+// dot strip stays at five dots however many shots there are (the window slides along with the active one).
+interface Props {
+  title: string;
+  shots: { src: string; alt: string }[];
+}
+
+const { title, shots } = Astro.props;
+const dots = Math.min(shots.length, 5);
+---
+
+<div class="gallery" role="region" aria-roledescription="carousel" aria-label={`${title} screenshots`} data-gallery>
+  <div class="gallery__frame">
+    {
+      shots.map((shot, i) => (
+        <figure
+          class="gallery__slide"
+          style={`--bg: url('${shot.src}')`}
+          aria-roledescription="slide"
+          aria-label={`${i + 1} of ${shots.length}`}
+          aria-hidden={i === 0 ? undefined : 'true'}
+          data-active={i === 0 ? '' : undefined}
+          data-slide
+        >
+          <img src={shot.src} alt={shot.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+        </figure>
+      ))
+    }
+    {
+      shots.length > 1 && (
+        <>
+          <button type="button" class="gallery__nav gallery__nav--prev" aria-label="Previous screenshot" data-prev>
+            ←
+          </button>
+          <button type="button" class="gallery__nav gallery__nav--next" aria-label="Next screenshot" data-next>
+            →
+          </button>
+        </>
+      )
+    }
+  </div>
+  {
+    shots.length > 1 && (
+      <div class="gallery__bar">
+        <div class="gallery__dots" role="group" aria-label="Choose screenshot">
+          {Array.from({ length: dots }, (_, k) => (
+            <button type="button" class="gallery__dot" aria-label={`Show screenshot ${k + 1}`} data-dot />
+          ))}
+        </div>
+        <p class="label gallery__count" data-count>
+          1 / {shots.length}
+        </p>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .gallery {
+    --ink: #17140f;
+  }
+  .gallery__frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 2px solid var(--color-ink);
+    background: var(--ink);
+  }
+  .gallery__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  /* Blurred copy of the shot fills the letterbox, so portrait phones and wide desktops share one frame. */
+  .gallery__slide::before {
+    content: '';
+    position: absolute;
+    inset: -2rem;
+    background: var(--bg) center / cover;
+    filter: blur(1.5rem) brightness(0.55) saturate(0.8);
+  }
+  .gallery__slide[data-active] {
+    opacity: 1;
+  }
+  .gallery__slide img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .gallery__nav {
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    width: 2.75rem;
+    height: 2.75rem;
+    translate: 0 -50%;
+    border-radius: 999px;
+    background: rgb(236 228 208 / 0.92);
+    color: var(--ink);
+    font-size: 1.2rem;
+    opacity: 0;
+    transition:
+      opacity 0.25s ease,
+      transform 0.2s ease;
+  }
+  .gallery__nav:hover {
+    transform: scale(1.08);
+  }
+  .gallery__nav--prev {
+    left: 0.9rem;
+  }
+  .gallery__nav--next {
+    right: 0.9rem;
+  }
+  .gallery:hover .gallery__nav,
+  .gallery:focus-within .gallery__nav {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .gallery__nav {
+      opacity: 0.85;
+    }
+  }
+  .gallery__bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    margin-top: 0.9rem;
+  }
+  .gallery__dots {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .gallery__dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-ink) 30%, transparent);
+    transition:
+      background 0.3s ease,
+      transform 0.3s ease,
+      width 0.3s ease;
+  }
+  /* More slides lie beyond this edge of the window. */
+  .gallery__dot[data-edge] {
+    transform: scale(0.6);
+  }
+  .gallery__dot[aria-current='true'] {
+    width: 1.6rem;
+    background: var(--color-torii);
+    transform: none;
+  }
+  .gallery__count {
+    grid-column: 3;
+    justify-self: end;
+    opacity: 0.7;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery__slide,
+    .gallery__dot {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const DELAY = 4000;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
+    const slides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    const count = root.querySelector<HTMLElement>('[data-count]');
+    const n = slides.length;
+    if (n < 2) return;
+    let index = 0;
+    let timer: number | undefined;
+    let hovered = false;
+    let inView = false;
+
+    // First slide in the dot window: keep the active dot centred until the window hits either end.
+    const windowStart = () => Math.min(Math.max(index - Math.floor(dots.length / 2), 0), n - dots.length);
+
+    const render = () => {
+      slides.forEach((s, i) => {
+        s.toggleAttribute('data-active', i === index);
+        if (i === index) s.removeAttribute('aria-hidden');
+        else s.setAttribute('aria-hidden', 'true');
+      });
+      const start = windowStart();
+      dots.forEach((d, k) => {
+        const slide = start + k;
+        d.setAttribute('aria-current', String(slide === index));
+        d.setAttribute('aria-label', `Show screenshot ${slide + 1}`);
+        d.toggleAttribute('data-edge', (k === 0 && start > 0) || (k === dots.length - 1 && start + dots.length < n));
+      });
+      if (count) count.textContent = `${index + 1} / ${n}`;
+    };
+
+    const schedule = () => {
+      window.clearTimeout(timer);
+      if (reduced.matches || hovered || !inView || document.hidden || root.querySelector(':focus-visible')) return;
+      timer = window.setTimeout(() => go(index + 1), DELAY);
+    };
+
+    const go = (to: number) => {
+      index = (to + n) % n;
+      render();
+      schedule();
+    };
+
+    // Announce changes only when the visitor drives the carousel, not on every autoplay tick.
+    const user = (to: number) => {
+      count?.setAttribute('aria-live', 'polite');
+      go(to);
+    };
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => user(index - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => user(index + 1));
+    dots.forEach((d, k) => d.addEventListener('click', () => user(windowStart() + k)));
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') user(index - 1);
+      if (e.key === 'ArrowRight') user(index + 1);
+    });
+
+    let touchX: number | null = null;
+    root.addEventListener('touchstart', (e) => (touchX = e.touches[0].clientX), { passive: true });
+    root.addEventListener('touchend', (e) => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 40) user(index + (dx < 0 ? 1 : -1));
+    });
+
+    root.addEventListener('mouseenter', () => ((hovered = true), schedule()));
+    root.addEventListener('mouseleave', () => ((hovered = false), schedule()));
+    root.addEventListener('focusout', () => queueMicrotask(schedule));
+    root.addEventListener('focusin', schedule);
+    document.addEventListener('visibilitychange', schedule);
+    reduced.addEventListener('change', schedule);
+    new IntersectionObserver(([entry]) => ((inView = entry.isIntersecting), schedule())).observe(root);
+
+    render();
+  });
+</script>

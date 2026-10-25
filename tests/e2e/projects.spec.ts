@@ -34,3 +34,60 @@ test('project images have alt text', async ({ page }) => {
     for (const alt of alts) expect(alt).toMatch(/\S/);
   }
 });
+
+test('detail gallery steps through screenshots with at most 5 dots', async ({ page }) => {
+  await page.goto('/projects/dapute/');
+  const gallery = page.getByRole('region', { name: 'Dapute screenshots' });
+  await expect(gallery.getByRole('img')).toHaveCount(1);
+  await expect(gallery.getByRole('group', { name: 'Choose screenshot' }).getByRole('button')).toHaveCount(5);
+  await expect(gallery.getByText('1 / 8')).toBeVisible();
+  await gallery.getByRole('button', { name: 'Next screenshot' }).click();
+  await expect(gallery.getByText('2 / 8')).toBeVisible();
+  await gallery.getByRole('button', { name: 'Previous screenshot' }).click();
+  await gallery.getByRole('button', { name: 'Previous screenshot' }).click();
+  await expect(gallery.getByText('8 / 8')).toBeVisible();
+  await gallery.getByRole('button', { name: 'Show screenshot 6' }).click();
+  await expect(gallery.getByText('6 / 8')).toBeVisible();
+
+  await page.goto('/projects/alterego-esport/');
+  const many = page.getByRole('region', { name: 'AlterEgo Esport screenshots' });
+  await expect(many.getByText('1 / 14')).toBeVisible();
+  await expect(many.getByRole('group', { name: 'Choose screenshot' }).getByRole('button')).toHaveCount(5);
+});
+
+test('detail gallery advances on its own', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/projects/darshanease/');
+  const gallery = page.getByRole('region', { name: 'Darshanease screenshots' });
+  await expect(gallery.getByText('1 / 11')).toBeVisible();
+  await page.clock.runFor(4500);
+  await expect(gallery.getByText('2 / 11')).toBeVisible();
+});
+
+test('detail gallery does not autoplay with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.install();
+  await page.goto('/projects/darshanease/');
+  const gallery = page.getByRole('region', { name: 'Darshanease screenshots' });
+  await page.clock.runFor(9000);
+  await expect(gallery.getByText('1 / 11')).toBeVisible();
+});
+
+test('project title never overlaps the gallery', async ({ page }, info) => {
+  // Desktop also checks the narrowest two-column width and a wide screen.
+  const widths = info.project.name === 'desktop' ? [1024, 1280, 1920] : [page.viewportSize()!.width];
+  for (const width of widths) {
+    for (const slug of ['dapute', 'alterego-esport', 'lnfti', 'wanderwhale', 'darshanease']) {
+      await page.setViewportSize({ width, height: page.viewportSize()!.height });
+      await page.goto(`/projects/${slug}/`);
+      const heading = page.getByRole('heading', { level: 1 });
+      expect(await heading.evaluate((el) => el.scrollWidth <= el.clientWidth), `${slug} title spills out of its column`).toBe(true);
+      const title = await heading.boundingBox();
+      const gallery = await page.getByRole('region', { name: /screenshots$/ }).boundingBox();
+      expect(title && gallery).toBeTruthy();
+      const beside = title!.x + title!.width <= gallery!.x;
+      const above = title!.y + title!.height <= gallery!.y;
+      expect(beside || above, `${slug} title overlaps the gallery at ${width}px`).toBe(true);
+    }
+  }
+});
