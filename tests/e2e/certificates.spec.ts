@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-test('landing shows 3 certificates and a working CV link', async ({ page, request }) => {
+test('landing shows the 4 featured certificates and a working CV link', async ({ page, request }) => {
   await page.goto('/');
   const list = page.getByRole('list', { name: 'Featured certificates' });
-  await expect(list.getByRole('listitem')).toHaveCount(3);
+  await expect(list.getByRole('listitem')).toHaveCount(4);
+  const featured = [/MongoDB Node.js Developer Path for SmartBridge/, /DIGDAYA Practitioner Phase/, /Lab Assistant, Statistics and Calculus/, /I\/O Festival 2025 Committee/];
+  for (const [i, name] of featured.entries()) await expect(list.getByRole('link').nth(i)).toHaveAccessibleName(name);
   await expect(page.getByRole('link', { name: 'View all certificates' })).toHaveAttribute('href', '/certificates/');
   const cv = page.getByRole('link', { name: 'Download CV' });
   await expect(cv).toHaveAttribute('href', '/Axel-Chrisdy-Sanjaya-CV.pdf');

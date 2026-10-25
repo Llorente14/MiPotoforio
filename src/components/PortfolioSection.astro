@@ -10,7 +10,7 @@ const featured = (await getCollection('projects'))
 
 const certificates = (await getCollection('certificates'))
   .sort((a, b) => a.data.featuredOrder - b.data.featuredOrder)
-  .slice(0, 3);
+  .slice(0, 4);
 ---
 
 <section id="portfolio" aria-labelledby="portfolio-heading" class="mx-auto max-w-[90rem] px-4 py-24 md:px-8 md:py-36">
