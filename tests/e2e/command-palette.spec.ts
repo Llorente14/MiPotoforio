@@ -51,7 +51,7 @@ test('shows a no results state', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Open search' }).click();
   await page.getByRole('combobox').fill('zzzzqqqq');
-  await expect(page.getByText('No results')).toBeVisible();
+  await expect(page.getByRole('status')).toHaveText(/Nothing matches “zzzzqqqq”/);
   await expect(page.getByRole('option')).toHaveCount(0);
 });
 

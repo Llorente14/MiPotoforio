@@ -98,30 +98,36 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
       onClick={(e) => {
         if (e.target === dialogRef.current) close();
       }}
-      className="palette m-auto mt-[12vh] w-[min(92vw,38rem)] bg-paper p-0 text-ink backdrop:bg-[#0b0f1c]/75"
+      className="palette m-auto mt-[10vh] w-[min(calc(100vw-2rem),36rem)] overflow-hidden rounded-2xl bg-paper p-0 text-ink backdrop:bg-[#0b0f1c]/70 backdrop:backdrop-blur-[2px]"
     >
-      <div className="border-b-2 border-ink px-5 pb-3 pt-5">
-        <p className="label mb-2 opacity-80">Index <span className="font-jp tracking-normal" aria-hidden="true">索引</span></p>
-        <input
-          ref={inputRef}
-          type="text"
-          role="combobox"
-          aria-expanded="true"
-          aria-controls={listId}
-          aria-activedescendant={results.length ? `${listId}-${active}` : undefined}
-          aria-label="Search sections, projects, certificates and links"
-          placeholder="Search…"
-          autoComplete="off"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setActive(0);
-          }}
-          onKeyDown={onKeyDown}
-          className="display w-full bg-transparent py-1 text-[2rem] outline-none placeholder:text-ink/40"
-        />
+      <div className="p-3">
+        <label className="flex items-center gap-3 rounded-xl bg-ink/[0.06] px-4 py-3 ring-1 ring-ink/10 transition-shadow focus-within:ring-ink/20">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" className="shrink-0 opacity-60">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+            <path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <input
+            ref={inputRef}
+            type="text"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls={listId}
+            aria-activedescendant={results.length ? `${listId}-${active}` : undefined}
+            aria-label="Search sections, projects, certificates and links"
+            placeholder="Search projects, certificates, sections"
+            autoComplete="off"
+            spellCheck={false}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setActive(0);
+            }}
+            onKeyDown={onKeyDown}
+            className="palette__input w-full min-w-0 bg-transparent text-[1.0625rem] leading-6 placeholder:text-ink/45"
+          />
+        </label>
       </div>
-      <ul id={listId} role="listbox" aria-label="Results" className="max-h-[50vh] overflow-auto py-2">
+      <ul id={listId} role="listbox" aria-label="Results" className="palette__list max-h-[min(52vh,26rem)] overflow-auto px-2 pb-2">
         {results.map((item, i) => (
           <li
             key={`${item.group}-${item.label}-${item.url}`}
@@ -130,18 +136,43 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
             aria-selected={i === active}
             onMouseMove={() => setActive(i)}
             onClick={() => go(item)}
-            className="flex cursor-pointer items-center justify-between border-b border-rule px-5 py-2.5 aria-selected:bg-ink aria-selected:text-paper"
+            className="group flex cursor-pointer items-center gap-4 rounded-[10px] px-3 py-2.5 transition-colors aria-selected:bg-ink/[0.09]"
           >
-            <span>{item.label}</span>
-            <span className="label opacity-80">{item.group}</span>
+            {/* Phones stack the group under the title so long certificate names stay readable. */}
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-4">
+              <span className="min-w-0 flex-1 text-[0.975rem] leading-snug [text-wrap:pretty] sm:line-clamp-2">{item.label}</span>
+              <span className="label shrink-0 tracking-[0.12em] opacity-55">{item.group}</span>
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              aria-hidden="true"
+              className="shrink-0 text-torii opacity-0 transition-opacity group-aria-selected:opacity-100 [@media(pointer:coarse)]:hidden"
+            >
+              <path d="M19 5v7a3 3 0 0 1-3 3H6m0 0 4-4m-4 4 4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </li>
         ))}
       </ul>
       {results.length === 0 && (
-        <p role="status" className="px-5 pb-5 text-center">
-          No results
+        <p role="status" className="px-5 pb-6 pt-3 text-center opacity-70">
+          Nothing matches “{query.trim()}”. Try a project or certificate name.
         </p>
       )}
+      <div className="flex items-center gap-4 border-t border-rule px-5 py-2.5 text-[0.75rem] opacity-70 [@media(pointer:coarse)]:hidden" aria-hidden="true">
+        <span className="flex items-center gap-1.5">
+          <kbd className="palette__key">↑</kbd>
+          <kbd className="palette__key">↓</kbd> move
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="palette__key">↵</kbd> open
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="palette__key">esc</kbd> close
+        </span>
+        <span className="ml-auto font-jp text-[0.8rem]">索引</span>
+      </div>
     </dialog>
   );
 }
