@@ -1,12 +1,16 @@
 ---
 title: Wanderwhale
-summary: "Placeholder: summary coming soon."
-stack: ["TBD"]
-repoUrl: https://github.com/Llorente14
+summary: "Flutter travel planner with live hotel and flight search, personal trips and a simulated booking flow."
+stack: ["Flutter", "Dart", "Node.js", "Express", "Firestore", "Firebase Auth", "Amadeus API"]
+repoUrl: https://github.com/Llorente14/Wanderwhale
 cover: /covers/wanderwhale.svg
 coverAlt: "Placeholder cover image for the Wanderwhale project"
 featuredOrder: 4
 date: 2025-09-01
 ---
 
-Placeholder: description coming soon.
+Wanderwhale is a travel planning app built for the Mobile Programming final exam (UAS). Travellers sign in with email or OAuth, create trips, add destinations and save hotels to each trip.
+
+Hotel and flight search runs live against the Amadeus Self-Service API: city and airport lookup, hotel offers and price confirmation, flight offers and seat maps. Booking and payment are simulated on purpose. Instead of calling Amadeus to create real orders, the backend stores confirmed hotel and flight bookings in Firestore.
+
+The mobile app is written in Flutter and talks to a Node.js and Express backend that handles the Amadeus calls and Firebase Authentication.

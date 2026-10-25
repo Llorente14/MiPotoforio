@@ -1,12 +1,16 @@
 ---
 title: Dapute
-summary: "Placeholder: summary coming soon."
-stack: ["TBD"]
-repoUrl: https://github.com/Llorente14
+summary: "Made-to-order cookie shop with online checkout, live shipping rates and an owner dashboard."
+stack: ["Laravel 13", "Livewire 3", "Tailwind CSS 4", "Supabase Postgres", "Midtrans", "Biteship"]
+repoUrl: https://github.com/Llorente14/Dapute
 cover: /covers/dapute.svg
 coverAlt: "Placeholder cover image for the Dapute project"
 featuredOrder: 1
 date: 2026-03-01
 ---
 
-Placeholder: description coming soon.
+Dapute is an e-commerce MVP for an artisan bakery that bakes every order fresh. It covers the whole customer journey in one flow: browse the catalog, check out, pay online and track the delivery. Owners and logistics admins get their own dashboard to run the shop.
+
+Shipping is priced live through the Biteship API, with regular and same-day couriers and a fallback rate when the API is down. Payments go through Midtrans Snap, and webhooks keep each order's payment status in sync. The cart stores a price snapshot, so a later price change never alters an order in progress.
+
+The code follows an Action-Based Architecture on the TALL stack: one Action class per business use case, kept apart from controllers and Livewire components so each rule is easy to read and test. It was built as the final exam (UAS) project for the Software Development course.

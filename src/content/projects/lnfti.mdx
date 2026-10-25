@@ -1,12 +1,17 @@
 ---
 title: LnFTI
-summary: "Placeholder: summary coming soon."
-stack: ["TBD"]
-repoUrl: https://github.com/Llorente14
+summary: "Lost-and-found PWA for FTI UNTAR, from report to verified claim and handover, with AI photo hints."
+stack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "FastAPI", "YOLO", "PaddleOCR", "Supabase"]
+repoUrl: https://github.com/Llorente14/LnFTI
+liveUrl: https://ln-fti.vercel.app
 cover: /covers/lnfti.svg
 coverAlt: "Placeholder cover image for the LnFTI project"
 featuredOrder: 3
 date: 2025-11-01
 ---
 
-Placeholder: description coming soon.
+Lost-item posts on campus get scattered across group chats and buried by new messages within hours. LnFTI gives students of the Faculty of Information Technology at UNTAR one place to report lost or found items, file a claim and follow it through verification until the handover is recorded.
+
+Anyone can browse the catalog by category and location without signing in. Claims rely on private ownership details that only the owner would know, and campus staff review them from their own dashboard.
+
+When a photo is uploaded, YOLO suggests the object type and PaddleOCR reads any text on it. These are only suggestions the user can edit, and OCR text is kept private for verification instead of being shown publicly. The app installs as a PWA, and the data lives in Supabase with row-level security.

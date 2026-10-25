@@ -18,9 +18,9 @@ test('list page shows all 4 projects and opens a detail page', async ({ page }) 
   await expect(page.getByRole('heading', { level: 1, name: 'Wanderwhale' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'GitHub repository' })).toHaveAttribute(
     'href',
-    'https://github.com/Llorente14',
+    'https://github.com/Llorente14/Wanderwhale',
   );
-  await expect(page.getByText('Placeholder: description coming soon.')).toBeVisible();
+  await expect(page.getByText(/live against the Amadeus Self-Service API/)).toBeVisible();
   await page.getByRole('link', { name: 'Back to projects' }).click();
   await expect(page).toHaveURL(/\/projects\/$/);
 });
