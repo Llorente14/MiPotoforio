@@ -1,6 +1,6 @@
 ---
 // "Videos & links" block on a project page. YouTube loads lite: only the thumbnail until the visitor
-// presses play, then the privacy-enhanced iframe replaces it.
+// presses play, then the YouTube player replaces it.
 interface Props {
   title: string;
   videos: { title: string; youtubeId?: string }[];
@@ -121,9 +121,11 @@ const { title, videos, links } = Astro.props;
   document.querySelectorAll<HTMLButtonElement>('[data-youtube]').forEach((btn) =>
     btn.addEventListener('click', () => {
       const frame = document.createElement('iframe');
-      frame.src = `https://www.youtube-nocookie.com/embed/${btn.dataset.youtube}?autoplay=1&rel=0`;
+      // controls=0 hides YouTube's control bar (channel, share and watch-later buttons); click the video to pause.
+      frame.src = `https://www.youtube.com/embed/${btn.dataset.youtube}?autoplay=1&controls=0&rel=0&playsinline=1`;
       frame.title = btn.dataset.title ?? 'YouTube video';
-      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
       frame.allowFullscreen = true;
       btn.replaceWith(frame);
       frame.focus();

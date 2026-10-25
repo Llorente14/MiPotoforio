@@ -110,7 +110,7 @@ test('a YouTube video loads only after the visitor presses play', async ({ page 
   await expect(media.getByText('Site walkthrough demo')).toBeVisible();
   await expect(page.locator('iframe')).toHaveCount(0);
   await media.getByRole('button', { name: 'Play video: Site walkthrough demo' }).click();
-  await expect(page.locator('iframe[title="Site walkthrough demo"]')).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/QRR-XEONwk0/);
+  await expect(page.locator('iframe[title="Site walkthrough demo"]')).toHaveAttribute('src', /youtube\.com\/embed\/QRR-XEONwk0\?.*controls=0/);
 });
 
 test('projects without videos or links have no media section', async ({ page }) => {
