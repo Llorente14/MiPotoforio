@@ -8,10 +8,11 @@ test('landing shows the 4 featured certificates and a working CV link', async ({
   for (const [i, name] of featured.entries()) await expect(list.getByRole('link').nth(i)).toHaveAccessibleName(name);
   await expect(page.getByRole('link', { name: 'View all certificates' })).toHaveAttribute('href', '/certificates/');
   const cv = page.getByRole('link', { name: 'Download CV' });
-  await expect(cv).toHaveAttribute('href', '/Axel-Chrisdy-Sanjaya-CV.pdf');
-  await expect(cv).toHaveAttribute('download', 'Axel-Chrisdy-Sanjaya-CV.pdf');
-  const res = await request.get('/Axel-Chrisdy-Sanjaya-CV.pdf');
+  await expect(cv).toHaveAttribute('href', '/Axel_Chrisdy_Sanjaya_CV.pdf');
+  await expect(cv).toHaveAttribute('download', 'Axel_Chrisdy_Sanjaya_CV.pdf');
+  const res = await request.get('/Axel_Chrisdy_Sanjaya_CV.pdf');
   expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toContain('application/pdf');
 });
 
 test('list page shows all certificates', async ({ page }) => {
