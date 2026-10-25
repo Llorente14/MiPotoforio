@@ -9,6 +9,9 @@ const ModelScene = lazy(() => import('./ModelScene'));
 // remounts the scene with a fresh context. After this many losses it settles on the still.
 const MAX_LOSSES = 3;
 
+// Width of each full-size still; scripts/responsive-images.mjs writes 480 and 720 wide copies beside it.
+const STILL_WIDTH: Record<ModelId, number> = { kaito: 1000, untar: 900, temple: 900 };
+
 // A scene that throws (no usable WebGL context yet, for one) shows the still instead of taking the slot
 // down, and reports it so the slot can try again.
 class SceneBoundary extends Component<
@@ -78,6 +81,8 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
   const still = (decorative: boolean) => (
     <img
       src={`/renders/${id}.webp`}
+      srcSet={`/renders/${id}-480.webp 480w, /renders/${id}-720.webp 720w, /renders/${id}.webp ${STILL_WIDTH[id]}w`}
+      sizes="(min-width: 768px) 40vw, 90vw"
       alt={decorative ? '' : alt}
       aria-hidden={decorative || undefined}
       width={1000}
@@ -87,7 +92,10 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
       onError={(e) => {
         // No render shipped for this id yet: use the generic placeholder.
         const img = e.currentTarget;
-        if (!img.src.endsWith('/renders/placeholder.svg')) img.src = '/renders/placeholder.svg';
+        if (!img.src.endsWith('/renders/placeholder.svg')) {
+          img.removeAttribute('srcset');
+          img.src = '/renders/placeholder.svg';
+        }
       }}
       className="absolute inset-0 size-full object-contain transition-opacity duration-500"
       style={{ opacity: decorative && ready ? 0 : 1 }}

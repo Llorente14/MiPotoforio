@@ -23,7 +23,15 @@ const year = date.getUTCFullYear();
     <span class:list={['pcard__index pcard__index--end', red && 'pcard__index--red']} aria-hidden="true">{rank}<br />{suit}</span>
 
     <div class="pcard__window">
-      <img src={cover} alt={coverAlt} width="1200" height="630" loading="lazy" />
+      <img
+        src={cover}
+        srcset={`${cover.replace(/\.webp$/, '-480.webp')} 480w, ${cover.replace(/\.webp$/, '-800.webp')} 800w, ${cover} 1200w`}
+        sizes="(min-width: 768px) 30vw, 80vw"
+        alt={coverAlt}
+        width="1200"
+        height="630"
+        loading="lazy"
+      />
     </div>
 
     <div class="pcard__body">
