@@ -15,6 +15,17 @@ test('desktop mounts a canvas in each model slot once scrolled into view', async
   }
 });
 
+test('desktop keeps the still until the first input, then mounts the scene', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop');
+  await page.goto('/');
+  const slot = page.locator('[data-model-slot="kaito"]');
+  await expect(slot.getByRole('img', { name: /Kaito Kid/ })).toBeVisible();
+  await page.waitForTimeout(1500);
+  await expect(slot.locator('canvas')).toHaveCount(0);
+  await page.mouse.move(300, 300);
+  await expect(slot.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
+});
+
 test('mobile never creates a 3D canvas and shows still images with alt text', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile');
   await page.goto('/');

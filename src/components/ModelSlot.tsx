@@ -1,5 +1,6 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { getDeviceCapability } from '../lib/device-capability';
+import { firstInput } from '../lib/first-input';
 import type { ModelId } from './ModelScene';
 
 // three.js is only downloaded when 3D is allowed.
@@ -66,7 +67,17 @@ export default function ModelSlot({ id, alt, priority = false, aspect = '4 / 3' 
     window.setTimeout(onContextLost, 1000);
   };
 
-  useEffect(() => setMode(getDeviceCapability()), []);
+  // three.js, the GLB decode and shader compiles are the heaviest work on the page: start them on the
+  // visitor's first input rather than during load. The still shows meanwhile.
+  useEffect(() => {
+    const capability = getDeviceCapability();
+    if (!capability.allow3d) return setMode(capability);
+    let live = true;
+    void firstInput().then(() => live && setMode(capability));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   // Coming back through the back/forward cache: the page is restored as it was, but its GPU contexts
   // may not have survived. Start the scene over.

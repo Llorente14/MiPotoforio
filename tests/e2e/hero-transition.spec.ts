@@ -8,6 +8,7 @@ test("desktop: the card grows from Kaito's hand to cover the viewport, About fol
 }, info) => {
   test.skip(info.project.name !== 'desktop');
   await page.goto('/');
+  await page.mouse.move(200, 200); // the 3D scene starts on the first input
   await expect(page.locator('[data-model-slot="kaito"] canvas')).toHaveCount(1, { timeout: 15_000 });
   const vh = page.viewportSize()!.height;
 
