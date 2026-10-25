@@ -16,7 +16,9 @@ test('list page shows all certificates', async ({ page }) => {
   await page.goto('/certificates/');
   await expect(page.getByRole('heading', { level: 1, name: 'Certificates' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Build an AI Agent/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /IBM|MongoDB|Red Hat|LPPI/ })).toHaveCount(8);
+  await expect(page.getByRole('button', { name: /IBM|MongoDB|Red Hat|LPPI|Tarumanagara/ })).toHaveCount(11);
+  await expect(page.getByRole('button', { name: /I\/O Festival 2025/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /SmartBridge/ })).toBeVisible();
 });
 
 test('enlarged view opens by mouse, closes with Escape and returns focus', async ({ page }) => {
